@@ -103,10 +103,10 @@ To accommodate varying skill levels and time availability, we define three achie
 
 Estimated time: 8-12 hours
 
-* Obsidian vault with Dashboard.md and Company_Handbook.md
+* Obsidian vault with Dashboard.md and Company-Handbook.md
 * One working Watcher script (Gmail OR file system monitoring)
 * Claude Code successfully reading from and writing to the vault
-* Basic folder structure: /Inbox, /Needs_Action, /Done
+* Basic folder structure: /Inbox, /Needs-Action, /Done
 * All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
 ## **Silver Tier: Functional Assistant**
@@ -150,13 +150,13 @@ All Gold requirements plus:
    2. **Local owns:** approvals, WhatsApp session, payments/banking, and final “send/post” actions
 3. Delegation via Synced Vault (Phase 1)
    1. Agents communicate by **writing files** into:
-      1. /Needs_Action/<domain\>/, /Plans/<domain\>/, /Pending_Approval/<domain\>/
+      1. /Needs-Action/<domain\>/, /Plans/<domain\>/, /Pending-Approval/<domain\>/
    2. Prevent double-work using:
       1. /In_Progress/<agent\>/ claim-by-move rule
       2. single-writer rule for Dashboard.md (Local)
       3. Cloud writes updates to /Updates/ (or /Signals/), and Local merges them into Dashboard.md.
    3. For Vault sync (Phase 1) use Git (recommended) or Syncthing.
-   4. **Claim-by-move rule:** first agent to move an item from /Needs_Action to /In_Progress/<agent\>/ owns it; other agents must ignore it.
+   4. **Claim-by-move rule:** first agent to move an item from /Needs-Action to /In_Progress/<agent\>/ owns it; other agents must ignore it.
 4. **Security rule:** Vault sync includes only markdown/state. Secrets never sync (.env, tokens, WhatsApp sessions, banking creds). So Cloud never stores or uses WhatsApp sessions, banking credentials, or payment tokens.
 5. Optional A2A Upgrade (Phase 2): Replace some file handoffs with direct A2A messages later, while keeping the vault as the audit record
 6. **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud drafts reply + writes approval file → when Local returns, user approves → Local executes send via MCP → logs → moves task to /Done.
@@ -165,7 +165,7 @@ All Gold requirements plus:
 
 * **The Nerve Center (Obsidian):** Acts as the **GUI (Graphical User Interface)** and **Long-Term Memory**.
   * **Dashboard.md:** Real-time summary of bank balance, pending messages, and active business projects.
-  * **Company_Handbook.md:** Contains your "Rules of Engagement" (e.g., "Always be polite on WhatsApp," "Flag any payment over $500 for my approval").
+  * **Company-Handbook.md:** Contains your "Rules of Engagement" (e.g., "Always be polite on WhatsApp," "Flag any payment over $500 for my approval").
 * **The Muscle (Claude Code):** Runs in your terminal, pointed at your Obsidian vault. It uses its **File System tools** to read your tasks and write reports. The Ralph Wiggum loop (a Stop hook) keeps Claude iterating until multi-step tasks are complete.
 
 
@@ -175,7 +175,7 @@ All Gold requirements plus:
 
 Since Claude Code can't "listen" to the internet 24/7, you use lightweight **Python Sentinel Scripts** running in the background:
 
-* **Comms Watcher:** Monitors Gmail and WhatsApp (via local web-automation or APIs) and saves new urgent messages as .md files in a /Needs_Action folder.
+* **Comms Watcher:** Monitors Gmail and WhatsApp (via local web-automation or APIs) and saves new urgent messages as .md files in a /Needs-Action folder.
 * **Finance Watcher:** Downloads local CSVs or calls banking APIs to log new transactions in /Accounting/Current_Month.md.
 * It will also be able to run on your laptop and immediately “wake up” as soon as you open your machine.
 
@@ -197,7 +197,7 @@ from abc import ABC, abstractmethod
 class BaseWatcher(ABC):
     def __init__(self, vault_path: str, check_interval: int = 60):
         self.vault_path = Path(vault_path)
-        self.needs_action = self.vault_path / 'Needs_Action'
+        self.Needs-Action = self.vault_path / 'Needs-Action'
         self.check_interval = check_interval
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -208,7 +208,7 @@ class BaseWatcher(ABC):
 
     @abstractmethod
     def create_action_file(self, item) -> Path:
-        '''Create .md file in Needs_Action folder'''
+        '''Create .md file in Needs-Action folder'''
         pass
 
     def run(self):
@@ -272,7 +272,7 @@ status: pending
 - [ ] Forward to relevant party
 - [ ] Archive after processing
 '''
-        filepath = self.needs_action / f'EMAIL_{message["id"]}.md'
+        filepath = self.Needs-Action / f'EMAIL_{message["id"]}.md'
         filepath.write_text(content)
         self.processed_ids.add(message['id'])
         return filepath
@@ -326,13 +326,13 @@ import shutil
 
 class DropFolderHandler(FileSystemEventHandler):
     def __init__(self, vault_path: str):
-        self.needs_action = Path(vault_path) / 'Needs_Action'
+        self.Needs-Action = Path(vault_path) / 'Needs-Action'
 
     def on_created(self, event):
         if event.is_directory:
             return
         source = Path(event.src_path)
-        dest = self.needs_action / f'FILE_{source.name}'
+        dest = self.Needs-Action / f'FILE_{source.name}'
         shutil.copy2(source, dest)
         self.create_metadata(source, dest)
 
@@ -352,7 +352,7 @@ New file dropped for processing.
 
 When the **Watcher** detects a change, it triggers a Claude command:
 
-6. **Read:** "Check /Needs_Action and /Accounting."
+6. **Read:** "Check /Needs-Action and /Accounting."
 7. **Think:** "I see a WhatsApp message from a client asking for an invoice and a bank transaction showing a late payment fee."
 8. **Plan:** Claude creates a Plan.md in Obsidian with checkboxes for the next steps.
 
@@ -414,7 +414,7 @@ For sensitive actions, Claude writes an approval request file instead of acting 
 # When Claude detects a sensitive action needed:
 # 1. Create approval request file
 
-# /Vault/Pending_Approval/PAYMENT_Client_A_2026-01-07.md
+# /Vault/Pending-Approval/PAYMENT_Client_A_2026-01-07.md
 ---
 type: approval_request
 action: payment
@@ -460,7 +460,7 @@ To keep your AI Employee working autonomously until a task is complete, use the
 
   ```bash
   # Start a Ralph loop
-  /ralph-loop "Process all files in /Needs_Action, move to /Done when complete"
+  /ralph-loop "Process all files in /Needs-Action, move to /Done when complete"
     --completion-promise "TASK_COMPLETE" \
     --max-iterations 10
   ```
@@ -593,7 +593,7 @@ Strong week with revenue ahead of target. One bottleneck identified.
 
 ### Cost Optimization
 - **Notion**: No team activity in 45 days. Cost: $15/month.
-  - [ACTION] Cancel subscription? Move to /Pending_Approval
+  - [ACTION] Cancel subscription? Move to /Pending-Approval
 
 ### Upcoming Deadlines
 - Project Alpha final delivery: Jan 15 (9 days)
@@ -854,12 +854,12 @@ The WhatsApp Watcher detects a message containing the keyword "invoice":
 # Text: "Hey, can you send me the invoice for January?"
 
 # Watcher creates:
-# /Vault/Needs_Action/WHATSAPP_client_a_2026-01-07.md
+# /Vault/Needs-Action/WHATSAPP_client_a_2026-01-07.md
 ```
 
 ### **Step 2: Reasoning (Claude Code)**
 
-The Orchestrator triggers Claude to process the Needs_Action folder:
+The Orchestrator triggers Claude to process the Needs-Action folder:
 
 ```
 # Claude reads the file and creates:
@@ -867,7 +867,7 @@ The Orchestrator triggers Claude to process the Needs_Action folder:
 
 ---
 created: 2026-01-07T10:30:00Z
-status: pending_approval
+status: Pending-Approval
 ---
 
 ## Objective
@@ -881,7 +881,7 @@ Generate and send January invoice to Client A
 - [ ] Log transaction
 
 ## Approval Required
-Email send requires human approval. See /Pending_Approval/
+Email send requires human approval. See /Pending-Approval/
 ```
 
 ## **Step 3: Approval (Human-in-the-Loop)**
@@ -889,7 +889,7 @@ Email send requires human approval. See /Pending_Approval/
 Claude creates an approval request:
 
 ```
-# /Vault/Pending_Approval/EMAIL_invoice_client_a.md
+# /Vault/Pending-Approval/EMAIL_invoice_client_a.md
 ---
 action: send_email
 to: client_a@email.com
@@ -927,7 +927,7 @@ Claude updates the Dashboard and moves files to Done:
 - [2026-01-07 10:45] Invoice sent to Client A ($1,500)
 
 # Files moved:
-# /Needs_Action/WHATSAPP_... -> /Done/
+# /Needs-Action/WHATSAPP_... -> /Done/
 # /Plans/PLAN_invoice_... -> /Done/
 # /Approved/EMAIL_... -> /Done/
 ```
@@ -956,7 +956,7 @@ A: Use a process manager like PM2 (Node.js) or supervisord (Python) to keep them
 
 **Q: Claude is making incorrect decisions**
 
-A: Review your Company_Handbook.md rules. Add more specific examples. Consider lowering autonomy thresholds so more actions require approval.
+A: Review your Company-Handbook.md rules. Add more specific examples. Consider lowering autonomy thresholds so more actions require approval.
 
 **Q: MCP server won't connect**
 
@@ -1037,11 +1037,11 @@ The following ASCII diagram illustrates the complete system architecture:
 ┌─────────────────────────────────────────────────────────────────┐
 │                    OBSIDIAN VAULT (Local)                       │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │ /Needs_Action/  │ /Plans/  │ /Done/  │ /Logs/             │  │
+│  │ /Needs-Action/  │ /Plans/  │ /Done/  │ /Logs/             │  │
 │  ├───────────────────────────────────────────────────────────┤  │
-│  │ Dashboard.md    │ Company_Handbook.md │ Business_Goals.md │  │
+│  │ Dashboard.md    │ Company-Handbook.md │ Business_Goals.md │  │
 │  ├───────────────────────────────────────────────────────────┤  │
-│  │ /Pending_Approval/  │  /Approved/  │  /Rejected/          │  │
+│  │ /Pending-Approval/  │  /Approved/  │  /Rejected/          │  │
 │  └───────────────────────────────────────────────────────────┘  │
 └────────────────────────────────┬────────────────────────────────┘
                                  │
@@ -1056,23 +1056,23 @@ The following ASCII diagram illustrates the complete system architecture:
                                  │
               ┌──────────────────┴───────────────────┐
               ▼                                      ▼
-┌────────────────────────────┐    ┌────────────────────────────────┐
-│    HUMAN-IN-THE-LOOP       │    │         ACTION LAYER           │
-│  ┌──────────────────────┐  │    │  ┌─────────────────────────┐   │
-│  │ Review Approval Files│──┼───▶│  │      MCP SERVERS       │   │
-│  │ Move to /Approved    │  │    │  │  ┌───────┐ ┌─────────┐  │   │
-│  └──────────────────────┘  │    │  │  │ Email │ │ Browser │  │   │
-│                            │    │  │  │  MCP  │ │   MCP   │  │   │
-└────────────────────────────┘    │  │  └───┬───┘ └────┬────┘  │   │
-                                  │  └──────┼──────────┼───────┘   │
-                                  └─────────┼──────────┼───────────┘
+┌────────────────────────────┐    ┌───────────────────────────────┐
+│    HUMAN-IN-THE-LOOP       │    │         ACTION LAYER          │
+│  ┌──────────────────────┐  │    │  ┌─────────────────────────┐  │
+│  │ Review Approval Files│──┼───▶│  │      MCP SERVERS       │  │
+│  │ Move to /Approved    │  │    │  │  ┌───────┐ ┌─────────┐  │  │
+│  └──────────────────────┘  │    │  │  │ Email │ │ Browser │  │  │
+│                            │    │  │  │  MCP  │ │   MCP   │  │  │
+└────────────────────────────┘    │  │  └───┬───┘ └────┬────┘  │  │
+                                  │  └──────┼──────────┼───────┘  │
+                                  └─────────┼──────────┼──────────┘
                                             │          │
                                             ▼          ▼
-                                  ┌────────────────────────────────┐
-                                  │        EXTERNAL ACTIONS        │
-                                  │  Send Email  │ Make Payment    │
-                                  │  Post Social │ Update Calendar │
-                                  └────────────────────────────────┘
+                                  ┌───────────────────────────────┐
+                                  │       EXTERNAL ACTIONS        │
+                                  │ Send Email  │ Make Payment    │
+                                  │ Post Social │ Update Calendar │
+                                  └───────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
 │                       ORCHESTRATION LAYER                       │

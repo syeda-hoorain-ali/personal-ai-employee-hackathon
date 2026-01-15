@@ -1,2 +1,8 @@
 tmpclaude-*
 .env
+gmail_credentials.json
+token.pickle
+AI_Employee_Vault
+*vault*
+__pycache__
+
