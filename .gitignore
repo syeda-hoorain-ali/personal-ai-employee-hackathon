@@ -4,5 +4,6 @@ gmail_credentials.json
 token.pickle
 AI_Employee_Vault
 *vault*
+!*vault*.py
 __pycache__
 
