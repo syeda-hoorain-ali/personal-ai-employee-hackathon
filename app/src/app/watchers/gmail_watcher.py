@@ -109,10 +109,10 @@ message_id: {message['id']}
 '''
 
             # Write with UTF-8 encoding to handle special characters
-            with open(self.Needs-Action / f'EMAIL_{message["id"]}.md', 'w', encoding='utf-8') as f:
+            with open(self.needs_action / f'EMAIL_{message["id"]}.md', 'w', encoding='utf-8') as f:
                 f.write(content)
 
-            filepath = self.Needs-Action / f'EMAIL_{message["id"]}.md'
+            filepath = self.needs_action / f'EMAIL_{message["id"]}.md'
             self.processed_ids.add(message['id'])
 
             self.logger.info(f'Created action file for email: {filepath}')

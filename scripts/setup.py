@@ -171,7 +171,7 @@ def main():
     # Test imports
     # Add the app/src directory to the Python path to allow imports
     import sys
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app', 'src'))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app', 'src'))
 
     try:
         from app.file_processor import FileProcessor
@@ -234,28 +234,29 @@ def main():
         print(f"[ERROR] Failed to initialize file system watcher: {e}")
         return 1
 
-    # Add Gmail watcher if credentials are available
-    credentials_path = Path("gmail_credentials.json")
-    token_path = Path("token.pickle")
+    # Only file watcher for now
+    # # Add Gmail watcher if credentials are available
+    # credentials_path = Path("gmail_credentials.json")
+    # token_path = Path("token.pickle")
 
-    if credentials_path.exists() and token_path.exists():
-        try:
-            from app.watchers.gmail_watcher import GmailWatcher
-            import pickle
+    # if credentials_path.exists() and token_path.exists():
+    #     try:
+    #         from app.watchers.gmail_watcher import GmailWatcher
+    #         import pickle
 
-            # Load credentials
-            with open(token_path, 'rb') as token:
-                creds = pickle.load(token)
+    #         # Load credentials
+    #         with open(token_path, 'rb') as token:
+    #             creds = pickle.load(token)
 
-            gmail_watcher = GmailWatcher(vault_path, str(token_path))
-            orchestrator.add_watcher(gmail_watcher)
-            print("[SUCCESS] Gmail watcher added and configured")
-        except Exception as e:
-            print(f"[WARNING] Gmail watcher initialization failed: {e}")
-            print("   Continuing with file system watcher only")
-    else:
-        print("[INFO] Gmail credentials not found - starting with file system watcher only")
-        print("   To enable Gmail monitoring: place gmail_credentials.json and token.pickle in the main directory")
+    #         gmail_watcher = GmailWatcher(vault_path, str(token_path))
+    #         orchestrator.add_watcher(gmail_watcher)
+    #         print("[SUCCESS] Gmail watcher added and configured")
+    #     except Exception as e:
+    #         print(f"[WARNING] Gmail watcher initialization failed: {e}")
+    #         print("   Continuing with file system watcher only")
+    # else:
+    #     print("[INFO] Gmail credentials not found - starting with file system watcher only")
+    #     print("   To enable Gmail monitoring: place gmail_credentials.json and token.pickle in the main directory")
 
     print("[SUCCESS] All available watchers configured")
     print("\nStarting watchers...")

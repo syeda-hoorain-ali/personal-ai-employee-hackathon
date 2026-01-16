@@ -19,6 +19,7 @@ class FileProcessorComponent:
         self.logger = get_logger(self.__class__.__name__)
         self.running = False
 
+
     def run(self):
         """Run the file processor continuously."""
         self.logger.info("Starting file processor...")
@@ -27,16 +28,14 @@ class FileProcessorComponent:
         while self.running:
             try:
                 # Process all files in Needs-Action directory
-                results = self.processor.process_Needs-Action_directory()
+                results = self.processor.process_needs_action_directory()
 
                 if results["processed_count"] > 0:
-                    self.logger.info(f"Processed {results['processed_count']} files")
+                    self.logger.info(f"Notified Claude Code of {results['processed_count']} files ready for processing")
                     if results["successful"]:
-                        self.logger.info(f"Successfully processed: {len(results['successful'])} files")
+                        self.logger.info(f"Successfully notified Claude for: {len(results['successful'])} files")
                     if results["failed"]:
-                        self.logger.warning(f"Failed to process: {len(results['failed'])} files")
-                    if results["approval_needed"]:
-                        self.logger.info(f"Approval needed for: {len(results['approval_needed'])} files")
+                        self.logger.warning(f"Failed to notify Claude for: {len(results['failed'])} files")
 
                 # Sleep for the check interval
                 time.sleep(self.check_interval)

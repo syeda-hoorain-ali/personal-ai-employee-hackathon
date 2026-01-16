@@ -9,7 +9,7 @@ from ..logging_config import get_logger
 
 class DropFolderHandler(FileSystemEventHandler):
     def __init__(self, vault_path: str):
-        self.Needs-Action = Path(vault_path) / 'Needs-Action'
+        self.needs_action = Path(vault_path) / 'Needs-Action'
         self.logger = get_logger(self.__class__.__name__)
 
     def on_created(self, event):
@@ -22,7 +22,7 @@ class DropFolderHandler(FileSystemEventHandler):
                 # This prevents the infinite loop when the handler creates its own files
                 if not source.name.startswith('FILE_') and not source.name.startswith('EMAIL_') and not source.name.endswith('_meta.md'):
                     # Move the file from Inbox to Needs-Action to indicate it needs processing
-                    dest = self.Needs-Action / source.name
+                    dest = self.needs_action / source.name
                     shutil.move(str(source), str(dest))
                     self.logger.info(f"Moved file from {source} to {dest}")
 

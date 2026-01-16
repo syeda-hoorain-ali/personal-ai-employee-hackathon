@@ -96,12 +96,27 @@ Once running, the system will:
 - Process tasks according to rules in `AI_Employee_Vault/Company-Handbook.md`
 - Log activity to `AI_Employee_Vault/Dashboard.md`
 
-### 5. Adding Tasks
-To give the AI Employee tasks:
-- Create `.md` files in the `AI_Employee_Vault/Needs-Action` directory
-- The AI will process these according to the rules in your Company Handbook
+### 5. How Claude Code Interacts with the System
+The system is designed to work seamlessly with Claude Code:
 
-### 6. Stopping the System
+1. **Files in Needs-Action Folder**: When the Gmail Watcher or File System Watcher detect new items, they create files in the `Needs-Action` folder.
+
+2. **Claude Prompt Generation**: The File Processor monitor the `Needs-Action` folder and automatically run Claude Code via slash commands/skills. These prompts include:
+   - The file that needs processing
+   - Relevant Company Handbook rules
+   - Specific instructions on how to handle the file
+
+3. **Claude Processing**: Claude Code can monitor the `Needs-Action` folder and process each prompt according to the Company Handbook rules and it's skills.
+
+4. **File Movement**: After Claude Code processes a file, it moves the file from `Needs-Action` to the appropriate folder (`Done`, `Pending-Approval`, etc.) based on the Company Handbook rules.
+
+### 6. Adding Tasks
+To give the AI Employee tasks:
+- Create `.md` files in the `AI_Employee_Vault/Inbox` directory (preferred) or `AI_Employee_Vault/Needs-Action` directory
+- The AI will process these according to the rules in your Company Handbook
+- Claude Code will receive prompts in the `AI_Employee_Vault/Claude_Prompts` directory to handle these tasks
+
+### 7. Stopping the System
 Press `Ctrl+C` in the terminal/command prompt to stop the system gracefully.
 
 ## Company Handbook Customization

@@ -14,8 +14,8 @@ class BaseWatcher(ABC):
             raise ValueError(f"Vault path does not exist: {self.vault_path}")
 
         # Ensure Needs-Action directory exists
-        self.Needs-Action = self.vault_path / 'Needs-Action'
-        self.Needs-Action.mkdir(parents=True, exist_ok=True)
+        self.needs_action = self.vault_path / 'Needs-Action'
+        self.needs_action.mkdir(parents=True, exist_ok=True)
 
         # Validate check interval
         if check_interval <= 0:
