@@ -1,0 +1,25 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Syeda Hoorain Ali", email = "syedahoorainali8@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "google-api-python-client>=2.188.0",
+    "google-auth>=2.47.0",
+    "google-auth-httplib2>=0.3.0",
+    "google-auth-oauthlib>=1.2.2",
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "watchdog>=6.0.0",
+]
+
+[project.scripts]
+app = "app:main"
+
+[build-system]
+requires = ["uv_build>=0.9.25,<0.10.0"]
+build-backend = "uv_build"

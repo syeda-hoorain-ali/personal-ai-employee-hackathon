@@ -1,0 +1,141 @@
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+import pickle
+from .base_watcher import BaseWatcher
+from app.logging_config import get_logger
+
+class GmailWatcher(BaseWatcher):
+    def __init__(self, vault_path: str, credentials_path: str):
+        super().__init__(vault_path, check_interval=120)
+        self.credentials_path = credentials_path
+        self.creds = self._load_credentials()
+        self.service = build('gmail', 'v1', credentials=self.creds)
+        self.processed_ids = set()
+
+    def _load_credentials(self):
+        """Load Google API credentials from file."""
+        try:
+            if not Path(self.credentials_path).exists():
+                raise FileNotFoundError(f'Credentials file not found: {self.credentials_path}')
+
+            # return Credentials.from_authorized_user_file(self.credentials_path)
+            with open(self.credentials_path, 'rb') as token:
+                return pickle.load(token)
+        except FileNotFoundError:
+            self.logger.error(f'Credentials file not found: {self.credentials_path}')
+            raise
+        except Exception as e:
+            self.logger.error(f'Error loading credentials: {e}')
+            raise
+
+    def check_for_updates(self) -> list:
+        """Check for new emails in Gmail inbox."""
+        try:
+            results = self.service.users().messages().list(
+                userId='me', q='is:unread is:important'
+            ).execute()
+            messages = results.get('messages', [])
+
+            # Filter out already processed messages
+            new_messages = [m for m in messages if m['id'] not in self.processed_ids]
+
+            self.logger.info(f'Found {len(new_messages)} new messages to process')
+            return new_messages
+        except HttpError as e:
+            self.logger.error(f'HTTP error checking for email updates: {e}')
+            return []
+        except Exception as e:
+            self.logger.error(f'Error checking for email updates: {e}')
+            return []
+
+    def create_action_file(self, item) -> Path:
+        """Create a markdown file for the email in the Needs_Action folder."""
+        message = item
+        try:
+            msg = self.service.users().messages().get(
+                userId='me', id=message['id']
+            ).execute()
+
+            # Extract headers
+            headers = {h['name']: h['value'] for h in msg['payload']['headers']}
+
+            # Get the actual received time from Gmail
+            # The 'internalDate' field contains the timestamp when the email was received by Gmail
+            import time
+            received_timestamp = int(msg.get('internalDate', time.time() * 1000))  # internalDate is in milliseconds
+            received_datetime = datetime.fromtimestamp(received_timestamp / 1000.0)  # convert to seconds
+
+            # Extract email body
+            body = ""
+            payload = msg.get('payload', {})
+            parts = payload.get('parts', [])
+
+            if parts:
+                for part in parts:
+                    if part.get('mimeType') == 'text/plain':
+                        import base64
+                        body_data = part['body']['data']
+                        if body_data:
+                            body = base64.urlsafe_b64decode(body_data).decode('utf-8')
+                        break
+            else:
+                # Handle simple message format
+                if 'body' in msg.get('payload', {}) and 'data' in msg['payload']['body']:
+                    import base64
+                    body_data = msg['payload']['body']['data']
+                    if body_data:
+                        body = base64.urlsafe_b64decode(body_data).decode('utf-8')
+
+            content = f'''---
+type: email
+from: {headers.get('From', 'Unknown')}
+subject: {headers.get('Subject', 'No Subject')}
+received: {received_datetime.isoformat()}
+priority: high
+status: pending
+message_id: {message['id']}
+
+---
+
+## Email Content
+{body or 'No content available'}
+
+## Suggested Actions
+- [ ] Reply to sender
+- [ ] Forward to relevant party
+- [ ] Archive after processing
+'''
+
+            # Write with UTF-8 encoding to handle special characters
+            with open(self.needs_action / f'EMAIL_{message["id"]}.md', 'w', encoding='utf-8') as f:
+                f.write(content)
+
+            filepath = self.needs_action / f'EMAIL_{message["id"]}.md'
+            self.processed_ids.add(message['id'])
+
+            self.logger.info(f'Created action file for email: {filepath}')
+            return filepath
+        except HttpError as e:
+            self.logger.error(f'HTTP error getting email {message["id"]}: {e}')
+            return None
+        except Exception as e:
+            self.logger.error(f'Error creating action file for email {message["id"]}: {e}')
+            return None
+
+    def run(self):
+        """Run the Gmail watcher continuously."""
+        self.logger.info(f'Starting {self.__class__.__name__}')
+        while True:
+            try:
+                items = self.check_for_updates()
+                for item in items:
+                    self.create_action_file(item)
+            except Exception as e:
+                self.logger.error(f'Error in Gmail watcher: {e}')
+            # Sleep for the check interval
+            import time
+            time.sleep(self.check_interval)

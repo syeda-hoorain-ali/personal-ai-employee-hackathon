@@ -197,7 +197,7 @@ from abc import ABC, abstractmethod
 class BaseWatcher(ABC):
     def __init__(self, vault_path: str, check_interval: int = 60):
         self.vault_path = Path(vault_path)
-        self.needs_action = self.vault_path / 'Needs_Action'
+        self.Needs_Action = self.vault_path / 'Needs_Action'
         self.check_interval = check_interval
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -272,7 +272,7 @@ status: pending
 - [ ] Forward to relevant party
 - [ ] Archive after processing
 '''
-        filepath = self.needs_action / f'EMAIL_{message["id"]}.md'
+        filepath = self.Needs_Action / f'EMAIL_{message["id"]}.md'
         filepath.write_text(content)
         self.processed_ids.add(message['id'])
         return filepath
@@ -326,13 +326,13 @@ import shutil
 
 class DropFolderHandler(FileSystemEventHandler):
     def __init__(self, vault_path: str):
-        self.needs_action = Path(vault_path) / 'Needs_Action'
+        self.Needs_Action = Path(vault_path) / 'Needs_Action'
 
     def on_created(self, event):
         if event.is_directory:
             return
         source = Path(event.src_path)
-        dest = self.needs_action / f'FILE_{source.name}'
+        dest = self.Needs_Action / f'FILE_{source.name}'
         shutil.copy2(source, dest)
         self.create_metadata(source, dest)
 
@@ -867,7 +867,7 @@ The Orchestrator triggers Claude to process the Needs_Action folder:
 
 ---
 created: 2026-01-07T10:30:00Z
-status: pending_approval
+status: Pending_Approval
 ---
 
 ## Objective
@@ -1056,23 +1056,23 @@ The following ASCII diagram illustrates the complete system architecture:
                                  │
               ┌──────────────────┴───────────────────┐
               ▼                                      ▼
-┌────────────────────────────┐    ┌────────────────────────────────┐
-│    HUMAN-IN-THE-LOOP       │    │         ACTION LAYER           │
-│  ┌──────────────────────┐  │    │  ┌─────────────────────────┐   │
-│  │ Review Approval Files│──┼───▶│  │      MCP SERVERS       │   │
-│  │ Move to /Approved    │  │    │  │  ┌───────┐ ┌─────────┐  │   │
-│  └──────────────────────┘  │    │  │  │ Email │ │ Browser │  │   │
-│                            │    │  │  │  MCP  │ │   MCP   │  │   │
-└────────────────────────────┘    │  │  └───┬───┘ └────┬────┘  │   │
-                                  │  └──────┼──────────┼───────┘   │
-                                  └─────────┼──────────┼───────────┘
+┌────────────────────────────┐    ┌───────────────────────────────┐
+│    HUMAN-IN-THE-LOOP       │    │         ACTION LAYER          │
+│  ┌──────────────────────┐  │    │  ┌─────────────────────────┐  │
+│  │ Review Approval Files│──┼───▶│  │      MCP SERVERS       │  │
+│  │ Move to /Approved    │  │    │  │  ┌───────┐ ┌─────────┐  │  │
+│  └──────────────────────┘  │    │  │  │ Email │ │ Browser │  │  │
+│                            │    │  │  │  MCP  │ │   MCP   │  │  │
+└────────────────────────────┘    │  │  └───┬───┘ └────┬────┘  │  │
+                                  │  └──────┼──────────┼───────┘  │
+                                  └─────────┼──────────┼──────────┘
                                             │          │
                                             ▼          ▼
-                                  ┌────────────────────────────────┐
-                                  │        EXTERNAL ACTIONS        │
-                                  │  Send Email  │ Make Payment    │
-                                  │  Post Social │ Update Calendar │
-                                  └────────────────────────────────┘
+                                  ┌───────────────────────────────┐
+                                  │       EXTERNAL ACTIONS        │
+                                  │ Send Email  │ Make Payment    │
+                                  │ Post Social │ Update Calendar │
+                                  └───────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
 │                       ORCHESTRATION LAYER                       │
