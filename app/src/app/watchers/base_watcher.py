@@ -13,8 +13,8 @@ class BaseWatcher(ABC):
         if not self.vault_path.exists():
             raise ValueError(f"Vault path does not exist: {self.vault_path}")
 
-        # Ensure Needs-Action directory exists
-        self.needs_action = self.vault_path / 'Needs-Action'
+        # Ensure Needs_Action directory exists
+        self.needs_action = self.vault_path / 'Needs_Action'
         self.needs_action.mkdir(parents=True, exist_ok=True)
 
         # Validate check interval
@@ -31,7 +31,7 @@ class BaseWatcher(ABC):
 
     @abstractmethod
     def create_action_file(self, item) -> Path:
-        '''Create .md file in Needs-Action folder'''
+        '''Create .md file in Needs_Action folder'''
         pass
 
     def run(self):

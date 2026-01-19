@@ -1,23 +1,22 @@
 ---
 name: needs-action-processor
-description: Process files in the Needs-Action folder according to Company Handbook rules. Use this skill when you need to handle tasks placed in the Needs-Action directory by watchers, following the rules defined in the Company Handbook.
+description: Process files in the Needs_Action folder according to Company Handbook rules. Use this skill when you need to handle tasks placed in the Needs_Action directory by watchers, following the rules defined in the Company Handbook.
 ---
 
 # Needs Action Processor
 
-Process files in the Needs-Action folder according to Company Handbook rules. Use this skill when you need to handle tasks placed in the Needs-Action directory by watchers, following the rules defined in the Company Handbook.
+Process files in the Needs_Action folder according to Company Handbook rules. Use this skill when you need to handle tasks placed in the Needs_Action directory by watchers, following the rules defined in the Company Handbook.
 
 ## When to Use This Skill
 
 Use this skill when:
-- There are files in the Needs-Action folder that need processing
+- There are files in the Needs_Action folder that need processing
 - You need to apply Company Handbook rules to incoming tasks
-- Watchers have placed files in Needs-Action that require action
-- You need to update the Dashboard after processing tasks
+- Watchers have placed files in Needs_Action that require action
 
 ## How to Use This Skill
 
-1. Check the Needs-Action folder for pending files
+1. Check the Needs_Action folder for pending files
 2. Read the Company Handbook rules
 3. Process each file according to the rules
 4. Update the Dashboard with outcomes
@@ -25,23 +24,23 @@ Use this skill when:
 
 ## Files and Directories
 
-- `<vault>/Needs-Action/` - Contains files waiting for processing
-- `<vault>/Company-Handbook.md` - Rules for processing tasks
+- `<vault>/Needs_Action/` - Contains files waiting for processing
+- `<vault>/Company_Handbook.md` - Rules for processing tasks
 - `<vault>/Dashboard.md` - Log of completed actions
 - `<vault>/Done/` - Successfully processed files
-- `<vault>/Pending-Approval/` - Files awaiting approval
+- `<vault>/Pending_Approval/` - Files awaiting approval
 
 ## Company Handbook Rule Processing
 
 The script analyzes each file and applies rules based on the Company Handbook:
 
-- **Financial Guidelines**: Payments over $100 require approval - moves to Pending-Approval
+- **Financial Guidelines**: Payments over $100 require approval - moves to Pending_Approval
 - **Communication Guidelines**: Professional and courteous communications
 - **Task Management**: Prioritize urgent items marked with 'urgent', 'asap', 'emergency', etc.
 - **Custom Rules**: Any specific rules defined in your Company Handbook
 
 The processing logic will:
-1. Read the Company Handbook from `<vault>/Company-Handbook.md`
+1. Read the Company Handbook from `<vault>/Company_Handbook.md`
 2. Parse rules based on headers like "Financial Guidelines", "Communication Guidelines", etc.
 3. Apply relevant rules based on content analysis
 4. Take appropriate actions (move to Done, Pending Approval, etc.)
@@ -49,7 +48,7 @@ The processing logic will:
 
 ## Processing Workflow
 
-For each file in Needs-Action:
+For each file in Needs_Action:
 
 1. **Analyze**: Read the file content and identify the type of task
 2. **Apply Rules**: Consult Company Handbook for appropriate action
@@ -58,5 +57,5 @@ For each file in Needs-Action:
 
 ## Available Commands
 
-- `process_needs_action_files()` - Process all files in Needs-Action
+- `process_needs_action_files()` - Process all files in Needs_Action
 - `scan_needs_action_folder()` - Scan for pending files only

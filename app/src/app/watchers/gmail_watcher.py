@@ -3,6 +3,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 import pickle
 from .base_watcher import BaseWatcher
 from app.logging_config import get_logger
@@ -51,8 +52,9 @@ class GmailWatcher(BaseWatcher):
             self.logger.error(f'Error checking for email updates: {e}')
             return []
 
-    def create_action_file(self, message) -> Path:
-        """Create a markdown file for the email in the Needs-Action folder."""
+    def create_action_file(self, item) -> Path:
+        """Create a markdown file for the email in the Needs_Action folder."""
+        message = item
         try:
             msg = self.service.users().messages().get(
                 userId='me', id=message['id']

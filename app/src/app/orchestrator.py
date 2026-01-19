@@ -10,7 +10,7 @@ from .file_processor import FileProcessor
 
 class FileProcessorComponent:
     """
-    Component that monitors and processes files in the Needs-Action directory.
+    Component that monitors and processes files in the Needs_Action directory.
     """
     def __init__(self, vault_path: str, check_interval: int = 30):
         self.vault_path = Path(vault_path)
@@ -27,7 +27,7 @@ class FileProcessorComponent:
 
         while self.running:
             try:
-                # Process all files in Needs-Action directory
+                # Process all files in Needs_Action directory
                 results = self.processor.process_needs_action_directory()
 
                 if results["processed_count"] > 0:

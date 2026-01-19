@@ -12,7 +12,7 @@ The `BaseWatcher` serves as the foundation for all watcher implementations.
 - `__init__(vault_path: str, check_interval: int = 60)`
   - Initializes the watcher with the vault path and check interval
   - Validates that the vault path exists
-  - Creates the `Needs-Action` directory if it doesn't exist
+  - Creates the `Needs_Action` directory if it doesn't exist
   - Validates that the check interval is positive
   - Sets up logging for the watcher
 
@@ -22,7 +22,7 @@ The `BaseWatcher` serves as the foundation for all watcher implementations.
   - Returns a list of detected items that need processing
 
 - `create_action_file(item) -> Path`
-  - Abstract method to create an action file in the `Needs-Action` directory
+  - Abstract method to create an action file in the `Needs_Action` directory
   - Must be implemented by subclasses
   - Returns the path to the created action file
 
@@ -35,17 +35,17 @@ The `BaseWatcher` serves as the foundation for all watcher implementations.
 
 #### Properties
 - `vault_path`: Path to the Obsidian vault
-- `Needs-Action`: Path to the `/Needs-Action` directory within the vault
+- `Needs_Action`: Path to the `/Needs_Action` directory within the vault
 - `check_interval`: Interval (in seconds) between checks
 - `logger`: Logger instance for the watcher
 
 ### FileSystemWatcher
-The `FileSystemWatcher` monitors file system changes, particularly in the `/Needs-Action` directory.
+The `FileSystemWatcher` monitors file system changes, particularly in the `/Needs_Action` directory.
 
 #### Methods
 - `__init__(vault_path: str, watch_path: str = None)`
   - Initializes the file system watcher
-  - If `watch_path` is not specified, defaults to `vault_path/Needs-Action`
+  - If `watch_path` is not specified, defaults to `vault_path/Needs_Action`
   - Creates the watch path if it doesn't exist
   - Sets up the observer and event handler
 
@@ -68,7 +68,7 @@ The `FileSystemWatcher` monitors file system changes, particularly in the `/Need
 - `on_created(event)`
   - Triggered when a file is created in the monitored directory
   - Checks if the file has a `.md` extension
-  - Copies the file to the `Needs-Action` directory with a `FILE_` prefix
+  - Copies the file to the `Needs_Action` directory with a `FILE_` prefix
   - Creates a metadata file with file information
 
 - `on_modified(event)`
@@ -85,13 +85,13 @@ Handles file system events for the `FileSystemWatcher`.
 #### Methods
 - `__init__(vault_path: str)`
   - Initializes the handler with the vault path
-  - Sets up the `Needs-Action` directory path
+  - Sets up the `Needs_Action` directory path
   - Sets up logging
 
 - `on_created(event)`
   - Handles file creation events
   - Filters for `.md` files
-  - Copies files to `Needs-Action` directory
+  - Copies files to `Needs_Action` directory
   - Creates metadata files
   - Includes error handling
 
@@ -125,7 +125,7 @@ Handles file system events for the `FileSystemWatcher`.
 
 ### FileSystemWatcher Configuration
 - `watch_path` (str): Path to monitor for file changes
-  - Required: No (defaults to `vault_path/Needs-Action`)
+  - Required: No (defaults to `vault_path/Needs_Action`)
   - Format: Absolute or relative path
   - Validation: Directory will be created if it doesn't exist
 
@@ -137,8 +137,8 @@ Handles file system events for the `FileSystemWatcher`.
 - Processing trigger: File creation in monitored directory
 
 ### Output Files
-- Action files: Copied to `Needs-Action` directory with `FILE_` prefix
-- Metadata files: Created in `Needs-Action` directory with `_meta.md` suffix
+- Action files: Copied to `Needs_Action` directory with `FILE_` prefix
+- Metadata files: Created in `Needs_Action` directory with `_meta.md` suffix
 - Metadata content includes:
   - `type`: Always set to "file_drop"
   - `original_name`: Original filename
@@ -181,9 +181,9 @@ Handles file system events for the `FileSystemWatcher`.
 - Watchers run in separate threads managed by orchestrator
 
 ### With File Processor
-- Watchers create files in `Needs-Action` directory
-- File processor monitors `Needs-Action` directory for new files
-- Processed files are moved to appropriate destinations (`Done`, `Pending-Approval`, etc.)
+- Watchers create files in `Needs_Action` directory
+- File processor monitors `Needs_Action` directory for new files
+- Processed files are moved to appropriate destinations (`Done`, `Pending_Approval`, etc.)
 
 ### With Vault Reader/Writer
 - Watchers may use vault writer to create action files

@@ -25,7 +25,7 @@ files:
   - "app/src/app/vault_reader.py"
   - "app/src/app/vault_writer.py"
   - "app/src/app/file_processor.py"
-  - "AI_Employee_Vault/Company-Handbook.md"
+  - "AI_Employee_Vault/Company_Handbook.md"
   - "AI_Employee_Vault/Dashboard.md"
   - "app/scripts/setup_vault.py"
 tests:
@@ -67,7 +67,7 @@ Implemented a complete Personal AI Employee system with Bronze Tier functionalit
 - app/src/app/vault_reader.py: Vault reading functionality
 - app/src/app/vault_writer.py: Vault writing functionality
 - app/src/app/file_processor.py: File processing based on company handbook rules
-- AI_Employee_Vault/Company-Handbook.md: Processing rules and guidelines
+- AI_Employee_Vault/Company_Handbook.md: Processing rules and guidelines
 - AI_Employee_Vault/Dashboard.md: Operational dashboard
 - app/scripts/setup_vault.py: Vault structure setup script
 

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scripts/setup.py)",
+      "Bash(python scripts/test.py)"
+    ],
+     "ask": [
+      "Bash(rm:*)"
+    ]
+  }
+}

@@ -24,7 +24,7 @@
 - **Fields**:
   - last_processed: Timestamp of last processing activity
   - active_tasks: Count of currently active tasks
-  - Pending-Approvals: Count of items awaiting approval
+  - Pending_Approvals: Count of items awaiting approval
   - recent_activity: List of recent actions taken
   - upcoming_tasks: List of scheduled tasks
   - proactive_suggestions: AI-generated suggestions for improvement

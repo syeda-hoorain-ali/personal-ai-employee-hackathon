@@ -91,37 +91,36 @@ This will:
 
 ### 4. System Operation
 Once running, the system will:
-- Monitor the `AI_Employee_Vault/Needs-Action` directory for new `.md` files
+- Monitor the `AI_Employee_Vault/Needs_Action` directory for new `.md` files
 - If Gmail credentials are provided, monitor your Gmail for important emails
-- Process tasks according to rules in `AI_Employee_Vault/Company-Handbook.md`
+- Process tasks according to rules in `AI_Employee_Vault/Company_Handbook.md`
 - Log activity to `AI_Employee_Vault/Dashboard.md`
 
 ### 5. How Claude Code Interacts with the System
 The system is designed to work seamlessly with Claude Code:
 
-1. **Files in Needs-Action Folder**: When the Gmail Watcher or File System Watcher detect new items, they create files in the `Needs-Action` folder.
+1. **Files in Needs_Action Folder**: When the Gmail Watcher or File System Watcher detect new items, they create files in the `Needs_Action` folder.
 
-2. **Claude Prompt Generation**: The File Processor monitor the `Needs-Action` folder and automatically run Claude Code via slash commands/skills. These prompts include:
+2. **Claude Prompt Generation**: The File Processor monitor the `Needs_Action` folder and automatically run Claude Code via slash commands/skills. These prompts include:
    - The file that needs processing
    - Relevant Company Handbook rules
    - Specific instructions on how to handle the file
 
-3. **Claude Processing**: Claude Code can monitor the `Needs-Action` folder and process each prompt according to the Company Handbook rules and it's skills.
+3. **Claude Processing**: Claude Code can monitor the `Needs_Action` folder and process each prompt according to the Company Handbook rules and it's skills.
 
-4. **File Movement**: After Claude Code processes a file, it moves the file from `Needs-Action` to the appropriate folder (`Done`, `Pending-Approval`, etc.) based on the Company Handbook rules.
+4. **File Movement**: After Claude Code processes a file, it moves the file from `Needs_Action` to the appropriate folder (`Done`, `Pending_Approval`, etc.) based on the Company Handbook rules.
 
 ### 6. Adding Tasks
 To give the AI Employee tasks:
-- Create `.md` files in the `AI_Employee_Vault/Inbox` directory (preferred) or `AI_Employee_Vault/Needs-Action` directory
+- Create `.md` files in the `AI_Employee_Vault/Inbox` directory (preferred) or `AI_Employee_Vault/Needs_Action` directory
 - The AI will process these according to the rules in your Company Handbook
-- Claude Code will receive prompts in the `AI_Employee_Vault/Claude_Prompts` directory to handle these tasks
 
 ### 7. Stopping the System
 Press `Ctrl+C` in the terminal/command prompt to stop the system gracefully.
 
 ## Company Handbook Customization
 
-The system uses `AI_Employee_Vault/Company-Handbook.md` to determine how to process tasks. You should customize this file with your specific rules and preferences for:
+The system uses `AI_Employee_Vault/Company_Handbook.md` to determine how to process tasks. You should customize this file with your specific rules and preferences for:
 - Email response guidelines
 - Financial transaction rules
 - Task priority classifications
@@ -139,14 +138,14 @@ The system uses `AI_Employee_Vault/Company-Handbook.md` to determine how to proc
 
 ### Updating the System:
 - To update dependencies, run: `cd app && uv sync`
-- To restart the system, stop it with Ctrl+C and run `python setup.py` again
+- To restart the system, stop it with Ctrl+C and run `python scripts/setup.py` again
 
 ## First-Time Setup Checklist:
 - [ ] Python 3.9+ installed
 - [ ] uv installed
 - [ ] Project files downloaded/cloned
 - [ ] (Optional) Gmail credentials set up and placed in project root
-- [ ] Run `python setup.py`
+- [ ] Run `python scripts/setup.py`
 - [ ] Verify system is monitoring (check Dashboard.md for activity)
-- [ ] Customize Company-Handbook.md with your preferences
-- [ ] Add test tasks to Needs-Action directory to verify functionality
+- [ ] Customize Company_Handbook.md with your preferences
+- [ ] Add test tasks to Needs_Action directory to verify functionality

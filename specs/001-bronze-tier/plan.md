@@ -7,7 +7,7 @@
 
 ## Summary
 
-Implementation of the Bronze Tier for the Personal AI Employee project, focusing on establishing the foundational Obsidian vault structure with Dashboard.md and Company-Handbook.md, implementing a file system watcher for task detection, and enabling Claude Code to read from and write to the Obsidian vault. The solution uses a local-first architecture with file-based task management.
+Implementation of the Bronze Tier for the Personal AI Employee project, focusing on establishing the foundational Obsidian vault structure with Dashboard.md and Company_Handbook.md, implementing a file system watcher for task detection, and enabling Claude Code to read from and write to the Obsidian vault. The solution uses a local-first architecture with file-based task management.
 
 ## Technical Context
 
@@ -56,12 +56,12 @@ specs/[###-feature]/
 ```text
 AI_Employee_Vault/
 ├── Dashboard.md
-├── Company-Handbook.md
+├── Company_Handbook.md
 ├── Inbox/
-├── Needs-Action/
+├── Needs_Action/
 ├── Done/
 ├── Plans/
-├── Pending-Approval/
+├── Pending_Approval/
 ├── Approved/
 ├── Rejected/
 ├── Logs/

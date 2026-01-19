@@ -61,7 +61,13 @@ def main():
         try:
             import importlib.util
             spec = importlib.util.spec_from_file_location("setup_vault", vault_setup_script)
+            if spec is None:
+                print(f"[ERROR] Could not load spec from {vault_setup_script}")
+                return 1
             setup_vault_module = importlib.util.module_from_spec(spec)
+            if spec.loader is None:
+                print(f"[ERROR] Spec loader is None for {vault_setup_script}")
+                return 1
             spec.loader.exec_module(setup_vault_module)
 
             # Call the main setup function directly with force=True to avoid interactive prompts
@@ -80,10 +86,10 @@ def main():
         print("[ERROR] Setup script not found, creating vault structure manually...")
         vault_dirs = [
             "AI_Employee_Vault/Inbox",
-            "AI_Employee_Vault/Needs-Action",
+            "AI_Employee_Vault/Needs_Action",
             "AI_Employee_Vault/Done",
             "AI_Employee_Vault/Plans",
-            "AI_Employee_Vault/Pending-Approval",
+            "AI_Employee_Vault/Pending_Approval",
             "AI_Employee_Vault/Approved",
             "AI_Employee_Vault/Rejected",
             "AI_Employee_Vault/Logs",
@@ -191,14 +197,14 @@ def main():
     print("[SUCCESS] Setup completed successfully!")
     print()
     print("[INFO] Next steps:")
-    print("   1. Review the AI_Employee_Vault/Company-Handbook.md for processing rules")
-    print("   2. Place .md files in AI_Employee_Vault/Needs-Action/ to test file processing")
+    print("   1. Review the AI_Employee_Vault/Company_Handbook.md for processing rules")
+    print("   2. Place .md files in AI_Employee_Vault/Needs_Action/ to test file processing")
     print("   3. The system will now start automatically")
     print()
 
     # Automatically start the system after setup
     print("Starting the AI Employee system automatically...")
-    print("Place .md files in AI_Employee_Vault/Needs-Action to test file processing")
+    print("Place .md files in AI_Employee_Vault/Needs_Action to test file processing")
     print("If Gmail monitoring is enabled, it will monitor your Gmail")
     print("Press Ctrl+C to stop the system")
     print("-" * 50)
@@ -210,7 +216,6 @@ def main():
     except ImportError as e:
         print(f"[ERROR] Failed to import required modules after setup: {e}")
         print("   The system was set up but cannot start automatically.")
-        print("   Please run 'python run_ai_employee.py' to start the system.")
         return 0
 
     # Setup logging
@@ -234,33 +239,32 @@ def main():
         print(f"[ERROR] Failed to initialize file system watcher: {e}")
         return 1
 
-    # Only file watcher for now
-    # # Add Gmail watcher if credentials are available
-    # credentials_path = Path("gmail_credentials.json")
-    # token_path = Path("token.pickle")
+    # Add Gmail watcher if credentials are available
+    credentials_path = Path("gmail_credentials.json")
+    token_path = Path("token.pickle")
 
-    # if credentials_path.exists() and token_path.exists():
-    #     try:
-    #         from app.watchers.gmail_watcher import GmailWatcher
-    #         import pickle
+    if credentials_path.exists() and token_path.exists():
+        try:
+            from app.watchers.gmail_watcher import GmailWatcher
+            import pickle
 
-    #         # Load credentials
-    #         with open(token_path, 'rb') as token:
-    #             creds = pickle.load(token)
+            # Load credentials
+            with open(token_path, 'rb') as token:
+                creds = pickle.load(token)
 
-    #         gmail_watcher = GmailWatcher(vault_path, str(token_path))
-    #         orchestrator.add_watcher(gmail_watcher)
-    #         print("[SUCCESS] Gmail watcher added and configured")
-    #     except Exception as e:
-    #         print(f"[WARNING] Gmail watcher initialization failed: {e}")
-    #         print("   Continuing with file system watcher only")
-    # else:
-    #     print("[INFO] Gmail credentials not found - starting with file system watcher only")
-    #     print("   To enable Gmail monitoring: place gmail_credentials.json and token.pickle in the main directory")
+            gmail_watcher = GmailWatcher(vault_path, str(token_path))
+            orchestrator.add_watcher(gmail_watcher)
+            print("[SUCCESS] Gmail watcher added and configured")
+        except Exception as e:
+            print(f"[WARNING] Gmail watcher initialization failed: {e}")
+            print("   Continuing with file system watcher only")
+    else:
+        print("[INFO] Gmail credentials not found - starting with file system watcher only")
+        print("   To enable Gmail monitoring: place gmail_credentials.json and token.pickle in the main directory")
 
     print("[SUCCESS] All available watchers configured")
     print("\nStarting watchers...")
-    print("Place .md files in AI_Employee_Vault/Needs-Action to test file processing")
+    print("Place .md files in AI_Employee_Vault/Needs_Action to test file processing")
     print("If Gmail monitoring is enabled, it will monitor your Gmail")
     print("Press Ctrl+C to stop the system")
     print("-" * 50)
@@ -270,7 +274,7 @@ def main():
         orchestrator.start_all_watchers()
         print("[SUCCESS] All watchers started successfully")
         print("\nAI Employee is now monitoring for tasks...")
-        print("   • File system: Monitoring AI_Employee_Vault/Needs-Action/ for .md files")
+        print("   • File system: Monitoring AI_Employee_Vault/Needs_Action/ for .md files")
         if credentials_path.exists() and token_path.exists():
             print("   • Gmail: Monitoring your Gmail account for important emails")
         print("   • Activity will be logged to the Dashboard.md file")

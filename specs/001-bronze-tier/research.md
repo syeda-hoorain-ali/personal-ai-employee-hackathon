@@ -1,7 +1,7 @@
 # Research: Bronze Tier - Personal AI Employee Foundation
 
 ## Decision: Python File System Watcher Implementation
-**Rationale**: Using Python's watchdog library to monitor file system changes in the Obsidian vault is the most appropriate solution for detecting new tasks in the /Needs-Action directory. This approach aligns with the hackathon requirements and provides reliable file change notifications.
+**Rationale**: Using Python's watchdog library to monitor file system changes in the Obsidian vault is the most appropriate solution for detecting new tasks in the /Needs_Action directory. This approach aligns with the hackathon requirements and provides reliable file change notifications.
 
 **Alternatives considered**:
 - Polling mechanism (less efficient, higher CPU usage)
@@ -22,14 +22,14 @@
 - Database abstraction layer (violates file-based approach)
 
 ## Decision: Folder Structure Organization
-**Rationale**: The /Inbox, /Needs-Action, and /Done folder structure provides a clear workflow for task management that aligns with the hackathon requirements and enables the AI Employee to process tasks systematically.
+**Rationale**: The /Inbox, /Needs_Action, and /Done folder structure provides a clear workflow for task management that aligns with the hackathon requirements and enables the AI Employee to process tasks systematically.
 
 **Alternatives considered**:
 - Different folder naming conventions (would reduce clarity)
 - Flat file structure (would lack organization)
 
 ## Decision: Task Processing Model
-**Rationale**: Using file-based triggers for task processing (placing files in /Needs-Action to trigger Claude Code) creates a simple, reliable mechanism for the AI Employee to detect and process tasks without requiring complex scheduling or real-time monitoring.
+**Rationale**: Using file-based triggers for task processing (placing files in /Needs_Action to trigger Claude Code) creates a simple, reliable mechanism for the AI Employee to detect and process tasks without requiring complex scheduling or real-time monitoring.
 
 **Alternatives considered**:
 - Cron-based processing (less responsive)

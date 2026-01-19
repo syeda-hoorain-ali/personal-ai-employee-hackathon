@@ -1,6 +1,6 @@
 """
 Integration tests to verify the complete workflow:
-1. Add file to /Needs-Action
+1. Add file to /Needs_Action
 2. Verify detection by the file processor
 3. Verify processing based on Company Handbook rules
 4. Verify movement to /Done directory
@@ -30,9 +30,9 @@ class TestCompleteWorkflow:
 
         # Create the vault structure
         self.vault_dir.mkdir(exist_ok=True)
-        (self.vault_dir / "Needs-Action").mkdir(exist_ok=True)
+        (self.vault_dir / "Needs_Action").mkdir(exist_ok=True)
         (self.vault_dir / "Done").mkdir(exist_ok=True)
-        (self.vault_dir / "Pending-Approval").mkdir(exist_ok=True)
+        (self.vault_dir / "Pending_Approval").mkdir(exist_ok=True)
         (self.vault_dir / "Logs").mkdir(exist_ok=True)
 
         # Create a basic Company Handbook for testing
@@ -47,7 +47,7 @@ class TestCompleteWorkflow:
 ## Task Management Rules
 - Process tasks in priority order
 """
-        handbook_path = self.vault_dir / "Company-Handbook.md"
+        handbook_path = self.vault_dir / "Company_Handbook.md"
         handbook_path.write_text(handbook_content)
 
         # Create a basic Dashboard
@@ -68,8 +68,8 @@ class TestCompleteWorkflow:
 
     def test_single_file_workflow(self):
         """Test the complete workflow: file addition → detection → processing → movement."""
-        # Create a test file in Needs-Action
-        test_file_path = self.vault_dir / "Needs-Action" / "test_task_123.md"
+        # Create a test file in Needs_Action
+        test_file_path = self.vault_dir / "Needs_Action" / "test_task_123.md"
         test_content = """---
 type: test_task
 priority: medium
@@ -90,7 +90,7 @@ This is a test file to verify the complete workflow.
         assert test_file_path.exists(), f"Test file was not created: {test_file_path}"
 
         # Process the file
-        success, message = self.processor.process_file("Needs-Action/test_task_123.md")
+        success, message = self.processor.process_file("Needs_Action/test_task_123.md")
         assert success, f"File processing failed: {message}"
 
         # Check if the file was moved to Done
@@ -112,7 +112,7 @@ This is a test file to verify the complete workflow.
     def test_high_priority_file_processing(self):
         """Test that high priority files are processed correctly."""
         # Create a high priority test file
-        high_priority_file = self.vault_dir / "Needs-Action" / "high_priority_test.md"
+        high_priority_file = self.vault_dir / "Needs_Action" / "high_priority_test.md"
         high_priority_content = """---
 type: email
 priority: high
@@ -125,12 +125,12 @@ Keywords like 'URGENT' and 'immediate' should trigger high priority handling.
         high_priority_file.write_text(high_priority_content)
 
         # Process the file
-        success, message = self.processor.process_file("Needs-Action/high_priority_test.md")
+        success, message = self.processor.process_file("Needs_Action/high_priority_test.md")
         assert success, f"High priority file processing failed: {message}"
 
-        # Check where the file was moved (could be Done or Pending-Approval depending on rules)
+        # Check where the file was moved (could be Done or Pending_Approval depending on rules)
         done_path = self.vault_dir / "Done" / "high_priority_test.md"
-        pending_path = self.vault_dir / "Pending-Approval" / "high_priority_test.md"
+        pending_path = self.vault_dir / "Pending_Approval" / "high_priority_test.md"
 
         # At least one of these should exist
         assert done_path.exists() or pending_path.exists(), "High priority file not found in expected locations"
@@ -138,7 +138,7 @@ Keywords like 'URGENT' and 'immediate' should trigger high priority handling.
     def test_payment_approval_workflow(self):
         """Test that payment-related files trigger approval workflow when appropriate."""
         # Create a payment test file with amount over threshold
-        payment_file = self.vault_dir / "Needs-Action" / "payment_test.md"
+        payment_file = self.vault_dir / "Needs_Action" / "payment_test.md"
         payment_content = """---
 type: request
 ---
@@ -150,18 +150,18 @@ This is a payment request that should require approval based on amount.
         payment_file.write_text(payment_content)
 
         # Process the file
-        success, message = self.processor.process_file("Needs-Action/payment_test.md")
+        success, message = self.processor.process_file("Needs_Action/payment_test.md")
         assert success, f"Payment-related file processing failed: {message}"
 
-        # Check where the payment file was moved (likely Pending-Approval due to amount > $100)
+        # Check where the payment file was moved (likely Pending_Approval due to amount > $100)
         done_path = self.vault_dir / "Done" / "payment_test.md"
-        pending_path = self.vault_dir / "Pending-Approval" / "payment_test.md"
+        pending_path = self.vault_dir / "Pending_Approval" / "payment_test.md"
 
-        # The file should either be in Done (if rule not triggered) or Pending-Approval (if approval required)
+        # The file should either be in Done (if rule not triggered) or Pending_Approval (if approval required)
         assert done_path.exists() or pending_path.exists(), "Payment file not found in expected locations"
 
     def test_batch_processing(self):
-        """Test processing multiple files in the Needs-Action directory."""
+        """Test processing multiple files in the Needs_Action directory."""
         # Create multiple test files
         test_files = [
             ("batch_test_1.md", "# Batch Test 1\nFirst test file for batch processing."),
@@ -170,12 +170,12 @@ This is a payment request that should require approval based on amount.
         ]
 
         for filename, content in test_files:
-            file_path = self.vault_dir / "Needs-Action" / filename
+            file_path = self.vault_dir / "Needs_Action" / filename
             file_path.write_text(content)
             assert file_path.exists(), f"Failed to create: {filename}"
 
         # Process all files using the batch method
-        results = self.processor.process_Needs-Action_directory()
+        results = self.processor.process_Needs_Action_directory()
 
         # Verify that files were processed
         assert results['processed_count'] >= 0, "No files were processed"
@@ -184,16 +184,16 @@ This is a payment request that should require approval based on amount.
         # Verify files were moved to appropriate directories
         done_dir = self.vault_dir / "Done"
         done_files = list(done_dir.glob("batch_test_*.md"))
-        pending_dir = self.vault_dir / "Pending-Approval"
+        pending_dir = self.vault_dir / "Pending_Approval"
         pending_files = list(pending_dir.glob("batch_test_*.md"))
 
         total_moved = len(done_files) + len(pending_files)
         assert total_moved == len(test_files), f"Expected {len(test_files)} files to be moved, but found {total_moved}"
 
-    def test_Company-Handbook_rule_application(self):
+    def test_Company_Handbook_rule_application(self):
         """Test that rules from Company Handbook are applied during processing."""
         # Create a file that should trigger specific rules
-        rule_test_file = self.vault_dir / "Needs-Action" / "rule_test.md"
+        rule_test_file = self.vault_dir / "Needs_Action" / "rule_test.md"
         rule_test_content = """---
 type: communication
 ---
@@ -205,16 +205,15 @@ According to the handbook, communications should be professional.
         rule_test_file.write_text(rule_test_content)
 
         # Process the file
-        success, message = self.processor.process_file("Needs-Action/rule_test.md")
+        success, message = self.processor.process_file("Needs_Action/rule_test.md")
         assert success, f"Rule test file processing failed: {message}"
 
         # Check that the file was moved appropriately
         done_path = self.vault_dir / "Done" / "rule_test.md"
-        pending_path = self.vault_dir / "Pending-Approval" / "rule_test.md"
+        pending_path = self.vault_dir / "Pending_Approval" / "rule_test.md"
 
         assert done_path.exists() or pending_path.exists(), "Rule test file not found in expected locations"
 
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-    

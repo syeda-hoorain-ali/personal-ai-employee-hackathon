@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script for processing needs-action files in the AI Employee vault.
+Script for processing Needs_Action files in the AI Employee vault.
 This script is designed to be used by Claude Code to process files
 according to the Company Handbook rules.
 """
@@ -10,37 +10,15 @@ import glob
 import sys
 from pathlib import Path
 import re
-import time
 
 def read_company_handbook(vault_path):
     """Read the Company Handbook rules."""
-    handbook_path = os.path.join(vault_path, "Company-Handbook.md")
+    handbook_path = os.path.join(vault_path, "Company_Handbook.md")
     if os.path.exists(handbook_path):
         with open(handbook_path, 'r', encoding='utf-8') as f:
             return f.read()
     return ""
 
-def update_dashboard(vault_path, message):
-    """Update the Dashboard with a message."""
-    dashboard_path = os.path.join(vault_path, "Dashboard.md")
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    entry = f"\n- [{timestamp}] {message}"
-
-    # Ensure the dashboard file exists with initial content if it doesn't exist
-    if not os.path.exists(dashboard_path):
-        initial_content = f"""# AI Employee Dashboard
-
-Welcome to your AI Employee dashboard. This file tracks all activities performed by the AI Employee system.
-
-## Activity Log
-
-{entry}
-"""
-        with open(dashboard_path, 'w', encoding='utf-8') as f:
-            f.write(initial_content)
-    else:
-        with open(dashboard_path, 'a', encoding='utf-8') as f:
-            f.write(entry)
 
 def move_file_to_done(vault_path, file_path):
     """Move a processed file to the Done folder."""
@@ -54,8 +32,8 @@ def move_file_to_done(vault_path, file_path):
     return dest_path
 
 def move_file_to_pending_approval(vault_path, file_path):
-    """Move a file to the Pending-Approval folder."""
-    pending_dir = os.path.join(vault_path, "Pending-Approval")
+    """Move a file to the Pending_Approval folder."""
+    pending_dir = os.path.join(vault_path, "Pending_Approval")
     os.makedirs(pending_dir, exist_ok=True)
 
     filename = os.path.basename(file_path)
@@ -90,7 +68,6 @@ def analyze_and_process_file(vault_path, file_path):
                 if amount > 100:
                     print(f"Amount ${amount} detected in {file_path} - moving to Pending Approval")
                     new_path = move_file_to_pending_approval(vault_path, file_path)
-                    update_dashboard(vault_path, f"Moved {os.path.basename(file_path)} to Pending Approval (Amount: ${amount})")
                     return "PENDING_APPROVAL"
             except ValueError:
                 continue
@@ -102,32 +79,31 @@ def analyze_and_process_file(vault_path, file_path):
 
     # Default: move to Done
     new_path = move_file_to_done(vault_path, file_path)
-    update_dashboard(vault_path, f"Processed {os.path.basename(file_path)} and moved to Done")
     return "DONE"
 
 def scan_needs_action_folder(vault_path="./AI_Employee_Vault"):
-    """Scan the Needs-Action folder for pending files."""
-    needs_action_dir = os.path.join(vault_path, "Needs-Action")
+    """Scan the Needs_Action folder for pending files."""
+    needs_action_dir = os.path.join(vault_path, "Needs_Action")
 
     if not os.path.exists(needs_action_dir):
-        print(f"Needs-Action directory does not exist: {needs_action_dir}")
+        print(f"Needs_Action directory does not exist: {needs_action_dir}")
         return []
 
-    # Find all .md files in Needs-Action
+    # Find all .md files in Needs_Action
     files = glob.glob(os.path.join(needs_action_dir, "*.md"))
 
-    print(f"Found {len(files)} files in Needs-Action folder:")
+    print(f"Found {len(files)} files in Needs_Action folder:")
     for file in files:
         print(f"  - {os.path.basename(file)}")
 
     return files
 
 def process_needs_action_files(vault_path="./AI_Employee_Vault"):
-    """Process all files in the Needs-Action directory."""
+    """Process all files in the Needs_Action directory."""
     files = scan_needs_action_folder(vault_path)
 
     if not files:
-        print(f"No files found in Needs-Action directory: {os.path.join(vault_path, 'Needs-Action')}")
+        print(f"No files found in Needs_Action directory: {os.path.join(vault_path, 'Needs_Action')}")
         return
 
     processed_count = 0

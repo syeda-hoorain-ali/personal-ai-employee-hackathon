@@ -1,5 +1,5 @@
 """
-Module for monitoring files and automatically triggering Claude Code to process them based on rules defined in Company-Handbook.md.
+Module for monitoring files and automatically triggering Claude Code to process them based on rules defined in Company_Handbook.md.
 This module automatically invokes Claude Code when files in the Needs_Action folder need processing.
 """
 
@@ -17,7 +17,7 @@ import time
 class FileProcessor:
     """
     Class to monitor and automatically trigger Claude Code to process files based on Company Handbook rules.
-    This version actively invokes Claude Code when files are detected in the Needs-Action folder.
+    This version actively invokes Claude Code when files are detected in the Needs_Action folder.
     """
     def __init__(self, vault_path: str):
         self.vault_path = Path(vault_path)
@@ -28,18 +28,21 @@ class FileProcessor:
         # Load company handbook rules
         self.handbook_rules = self._load_handbook_rules()
 
+        # Track files that have already been processed to avoid repetitive logging
+        self.processed_files = set()
+
     def _load_handbook_rules(self) -> Dict[str, str]:
         """
-        Load rules from Company-Handbook.md.
+        Load rules from Company_Handbook.md.
 
         Returns:
             Dictionary of rule categories and their definitions
         """
-        handbook_content = self.reader.read_file("Company-Handbook.md")
+        handbook_content = self.reader.read_file("Company_Handbook.md")
         rules = {}
 
         if not handbook_content:
-            self.logger.warning("Could not load Company-Handbook.md, using default rules")
+            self.logger.warning("Could not load Company_Handbook.md, using default rules")
             return self._get_default_rules()
 
         # Extract sections from handbook
@@ -120,15 +123,13 @@ class FileProcessor:
         success = self._trigger_claude_processing(file_path)
 
         if success:
-            # Update dashboard
-            self.writer.update_dashboard(f"File {os.path.basename(file_path)} is ready for Claude Code processing")
             return True, f"Claude Code notified to process {file_path}"
         else:
             return False, f"Failed to notify Claude Code to process: {file_path}"
 
     def _trigger_claude_processing(self, file_path: str) -> bool:
         """
-        Trigger Claude Code to process this file using the needs-action-processor skill.
+        Trigger Claude Code to process this file using the Needs_Action-processor skill.
         Uses the ccr code -p command to run Claude Code in non-interactive mode.
 
         Args:
@@ -140,20 +141,28 @@ class FileProcessor:
         try:
             self.logger.info(f"Triggering Claude Code to process: {file_path}")
 
-            # Create a prompt that tells Claude Code to use the needs-action-processor skill
-            prompt = f'Use the needs-action-processor skill to process files in the Needs-Action folder. The file {file_path} needs processing according to the Company Handbook rules.'
+            # Create a prompt that tells Claude Code to use the Needs_Action-processor skill
+            prompt = f'Use the Needs_Action-processor skill to process files in the Needs_Action folder. The file {file_path} needs processing according to the Company Handbook rules.'
 
             # Execute Claude Code with the prompt in non-interactive mode
             result = subprocess.run(
-                ['ccr', 'code', '-p', prompt],
+                [
+                    'ccr', 'code',
+                    '--allowedTools', 'Read,Edit',
+                    '--disallowedTools', 'Bash(rm:*)',
+                    '--no-session-persistence',
+                    '-p', prompt
+                ],
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=600,  # 10 minute timeout
+                encoding='utf-8',
+                errors='replace',    # Replace bad characters with �
+                shell=True,
             )
 
             if result.returncode == 0:
                 self.logger.info(f"Successfully triggered Claude Code for: {file_path}")
-                self.writer.update_dashboard(f"Claude Code triggered to process {os.path.basename(file_path)}")
                 return True
             else:
                 self.logger.error(f"Failed to trigger Claude Code: {result.stderr}")
@@ -164,9 +173,7 @@ class FileProcessor:
             return False
         except FileNotFoundError:
             self.logger.warning("ccr command not found, unable to trigger Claude Code. Manual processing required.")
-            # Still update the dashboard so user knows the file needs processing
-            self.writer.update_dashboard(f"File {os.path.basename(file_path)} is ready for Claude Code processing (ccr not found)")
-            return True  # Return True to indicate this is not a permanent failure
+            return False
         except Exception as e:
             self.logger.error(f"Error triggering Claude Code for {file_path}: {e}")
             return False
@@ -214,7 +221,7 @@ class FileProcessor:
         Returns:
             Tuple of (processed content: str, list of actions needed: List[str])
         """
-        actions_needed = []
+        actions_needed: List[str] = []
 
         # Look for keywords in the content that might trigger specific rules
         content_lower = content.lower()
@@ -270,7 +277,7 @@ class FileProcessor:
 
         # Check if any action requires approval
         if any("APPROVAL_NEEDED" in action for action in actions_needed):
-            next_action = "Pending-Approval"
+            next_action = "Pending_Approval"
         elif any("HIGH_PRIORITY" in action for action in actions_needed):
             # For high priority items, they might need special handling
             # Claude Code will make the final decision
@@ -296,9 +303,9 @@ class FileProcessor:
         filename = Path(original_path).name
 
         # Create destination path
-        if next_action == "Pending-Approval":
+        if next_action == "Pending_Approval":
             # For approval items, we might create a specific approval file
-            dest_path = f"Pending-Approval/{filename}"
+            dest_path = f"Pending_Approval/{filename}"
         else:
             dest_path = f"{next_action}/{filename}"
 
@@ -309,7 +316,7 @@ class FileProcessor:
 
     def process_needs_action_directory(self) -> Dict[str, Any]:
         """
-        Process all files in the Needs-Action directory by creating Claude Code prompts.
+        Process all files in the Needs_Action directory by creating Claude Code prompts.
         This simulates how Claude Code would process files in the Needs_Action folder.
 
         Returns:
@@ -319,19 +326,26 @@ class FileProcessor:
             "processed_count": 0,
             "successful": [],
             "failed": [],
-            "approval_needed": []
+            "approval_needed": [],
         }
 
-        # Get all files in Needs-Action directory, excluding metadata files
-        needs_action_files = [f for f in self.reader.get_file_list("Needs-Action", ".md") if not f.endswith('_meta.md')]
+        # Get all files in Needs_Action directory, excluding metadata files
+        needs_action_files = [f for f in self.reader.get_file_list("Needs_Action", ".md") if not f.endswith('_meta.md')]
 
         for filename in needs_action_files:
-            file_path = f"Needs-Action/{filename}"
+            file_path = f"Needs_Action/{filename}"
+
+            # Check if this file has already been processed to avoid repetitive logging
+            if file_path in self.processed_files:
+                continue
+
             success, message = self.process_file(file_path)
 
             if success:
                 results["successful"].append(filename)
                 results["processed_count"] += 1
+                # Mark this file as processed to avoid re-processing
+                self.processed_files.add(file_path)
 
                 # In the Claude-integrated version, approval decisions would be made by Claude
                 if "Claude Code notified" in message:
@@ -348,7 +362,7 @@ class FileProcessor:
 if __name__ == "__main__":
     processor = FileProcessor("./AI_Employee_Vault")
 
-    # Process all files in Needs-Action directory
+    # Process all files in Needs_Action directory
     results = processor.process_needs_action_directory()
 
     print(f"Processed {results['processed_count']} files")

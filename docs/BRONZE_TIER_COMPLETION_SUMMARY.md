@@ -1,15 +1,15 @@
 # Bronze Tier - Personal AI Employee Foundation - COMPLETION SUMMARY
 
 ## Overview
-The Bronze Tier of the Personal AI Employee project has been successfully completed. This implementation establishes the foundational Obsidian vault structure with Dashboard.md and Company-Handbook.md, implements a file system watcher to monitor for new tasks, and enables Claude Code to read from and write to the Obsidian vault.
+The Bronze Tier of the Personal AI Employee project has been successfully completed. This implementation establishes the foundational Obsidian vault structure with Dashboard.md and Company_Handbook.md, implements a file system watcher to monitor for new tasks, and enables Claude Code to read from and write to the Obsidian vault.
 
 ## Features Implemented
 
 ### 1. Obsidian Vault Setup (User Story 1 - Priority P1)
 - ✅ Created complete AI_Employee_Vault directory structure with all required subdirectories:
-  - `/Inbox`, `/Needs-Action`, `/Done`, `/Plans`, `/Pending-Approval`, `/Approved`, `/Rejected`, `/Logs`, `/Accounting`
+  - `/Inbox`, `/Needs_Action`, `/Done`, `/Plans`, `/Pending_Approval`, `/Approved`, `/Rejected`, `/Logs`, `/Accounting`
 - ✅ Created `Dashboard.md` with system status tracking and executive summary
-- ✅ Created comprehensive `Company-Handbook.md` with operational guidelines including:
+- ✅ Created comprehensive `Company_Handbook.md` with operational guidelines including:
   - Communication guidelines
   - Financial guidelines with approval thresholds
   - Task management rules
@@ -20,7 +20,7 @@ The Bronze Tier of the Personal AI Employee project has been successfully comple
 
 ### 2. File System Watcher Implementation (User Story 2 - Priority P2)
 - ✅ Created abstract `BaseWatcher` class with proper validation and error handling
-- ✅ Implemented `FileSystemWatcher` to monitor `/Needs-Action` directory for .md files
+- ✅ Implemented `FileSystemWatcher` to monitor `/Needs_Action` directory for .md files
 - ✅ Implemented `DropFolderHandler` with file creation, modification, and deletion event handling
 - ✅ Added proper metadata creation for detected files
 - ✅ Implemented `GmailWatcher` for monitoring Gmail (structure in place)
@@ -30,7 +30,7 @@ The Bronze Tier of the Personal AI Employee project has been successfully comple
 - ✅ Created `VaultReader` module for reading files from the vault
 - ✅ Created `VaultWriter` module for writing files to the vault
 - ✅ Created `FileProcessor` module for processing files based on Company Handbook rules
-- ✅ Implemented logic to move processed files from `/Needs-Action` to appropriate destinations (`/Done`, `/Pending-Approval`)
+- ✅ Implemented logic to move processed files from `/Needs_Action` to appropriate destinations (`/Done`, `/Pending_Approval`)
 - ✅ Added Dashboard update functionality to track system activity
 
 ### 4. System Orchestration
@@ -53,14 +53,14 @@ The Bronze Tier of the Personal AI Employee project has been successfully comple
 
 All 8 functional requirements (FR-001 through FR-008) have been successfully implemented and verified:
 
-- ✅ FR-001: System provides Obsidian vault structure with Dashboard.md and Company-Handbook.md
-- ✅ FR-002: System provides file system watcher to monitor for new files in /Needs-Action directory
+- ✅ FR-001: System provides Obsidian vault structure with Dashboard.md and Company_Handbook.md
+- ✅ FR-002: System provides file system watcher to monitor for new files in /Needs_Action directory
 - ✅ FR-003: Users can initiate Claude Code processing of files in the vault
 - ✅ FR-004: System provides appropriate file organization for task management
 - ✅ FR-005: System enables Claude Code to read from and write to vault files
-- ✅ FR-006: System maintains basic folder structure (/Inbox, /Needs-Action, /Done)
+- ✅ FR-006: System maintains basic folder structure (/Inbox, /Needs_Action, /Done)
 - ✅ FR-007: System detects all .md files in monitored directories
-- ✅ FR-008: System processes files based on rules defined in Company-Handbook.md
+- ✅ FR-008: System processes files based on rules defined in Company_Handbook.md
 
 ## Architecture Highlights
 
@@ -107,10 +107,10 @@ app/
 │   └── pyproject.toml         # Project dependencies
 ├── AI_Employee_Vault/         # Obsidian vault structure
 │   ├── Dashboard.md
-│   ├── Company-Handbook.md
-│   ├── Needs-Action/
+│   ├── Company_Handbook.md
+│   ├── Needs_Action/
 │   ├── Done/
-│   ├── Pending-Approval/
+│   ├── Pending_Approval/
 │   └── ...
 └── specs/001-bronze-tier/     # Project specifications
     ├── spec.md

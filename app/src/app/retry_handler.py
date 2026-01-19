@@ -16,7 +16,7 @@ class PermanentError(Exception):
 
 def with_retry(max_attempts: int = 3, base_delay: float = 1.0, max_delay: float = 60.0,
                backoff_factor: float = 2.0,
-               retry_on_exceptions: tuple = (TransientError, ConnectionError)):
+               retry_on_exceptions: tuple = (TransientError, ConnectionError)) -> Callable:
     """
     Decorator to add retry logic to functions.
 
@@ -29,7 +29,7 @@ def with_retry(max_attempts: int = 3, base_delay: float = 1.0, max_delay: float 
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_exception = None
 
             for attempt in range(max_attempts):
@@ -66,7 +66,7 @@ class RetryHandler:
     """
 
     def __init__(self, max_attempts: int = 3, base_delay: float = 1.0,
-                 max_delay: float = 60.0, backoff_factor: float = 2.0):
+                 max_delay: float = 60.0, backoff_factor: float = 2.0) -> None:
         self.max_attempts = max_attempts
         self.base_delay = base_delay
         self.max_delay = max_delay
@@ -128,7 +128,7 @@ class RetryHandler:
 
 
 # Example usage functions
-def example_usage():
+def example_usage() -> None:
     """Example of how to use the retry handler."""
 
     # Method 1: Using the decorator

@@ -15,11 +15,11 @@ class TestFileSystemWatcher(unittest.TestCase):
         """Set up test fixtures before each test method."""
         self.test_dir = Path(tempfile.mkdtemp())
         self.vault_dir = self.test_dir / "AI_Employee_Vault"
-        self.Needs-Action_dir = self.vault_dir / "Needs-Action"
+        self.Needs_Action_dir = self.vault_dir / "Needs_Action"
 
         # Create the vault structure
         self.vault_dir.mkdir(parents=True, exist_ok=True)
-        self.Needs-Action_dir.mkdir(parents=True, exist_ok=True)
+        self.Needs_Action_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize the watcher
         self.watcher = FileSystemWatcher(str(self.vault_dir))
@@ -46,9 +46,9 @@ class TestFileSystemWatcher(unittest.TestCase):
         # Call on_created method
         handler.on_created(mock_event)
 
-        # Check that a metadata file was created in Needs-Action
-        meta_files = list(self.Needs-Action_dir.glob("*_meta.md"))
-        self.assertTrue(len(meta_files) > 0, "Metadata file should be created in Needs-Action directory")
+        # Check that a metadata file was created in Needs_Action
+        meta_files = list(self.Needs_Action_dir.glob("*_meta.md"))
+        self.assertTrue(len(meta_files) > 0, "Metadata file should be created in Needs_Action directory")
 
         # Check content of the metadata file
         meta_content = meta_files[0].read_text()
@@ -72,8 +72,8 @@ class TestFileSystemWatcher(unittest.TestCase):
         # Call on_created method
         handler.on_created(mock_event)
 
-        # Check that no metadata file was created in Needs-Action
-        meta_files = list(self.Needs-Action_dir.glob("*_meta.md"))
+        # Check that no metadata file was created in Needs_Action
+        meta_files = list(self.Needs_Action_dir.glob("*_meta.md"))
         self.assertEqual(len(meta_files), 0, "No metadata file should be created for non-Markdown files")
 
     @patch('app.watchers.filesystem_watcher.Observer')
@@ -115,11 +115,11 @@ class TestIntegrationWithRealFileSystem(unittest.TestCase):
         """Set up test fixtures before each test method."""
         self.test_dir = Path(tempfile.mkdtemp())
         self.vault_dir = self.test_dir / "AI_Employee_Vault"
-        self.Needs-Action_dir = self.vault_dir / "Needs-Action"
+        self.Needs_Action_dir = self.vault_dir / "Needs_Action"
 
         # Create the vault structure
         self.vault_dir.mkdir(parents=True, exist_ok=True)
-        self.Needs-Action_dir.mkdir(parents=True, exist_ok=True)
+        self.Needs_Action_dir.mkdir(parents=True, exist_ok=True)
 
     def tearDown(self):
         """Clean up after each test method."""
@@ -146,9 +146,9 @@ class TestIntegrationWithRealFileSystem(unittest.TestCase):
         # Wait a bit for file operations to complete
         time.sleep(0.1)
 
-        # Verify that a metadata file was created in Needs-Action
-        meta_files = list(self.Needs-Action_dir.glob("FILE_integration_test_meta.md"))
-        self.assertTrue(len(meta_files) > 0, "Metadata file should be created in Needs-Action")
+        # Verify that a metadata file was created in Needs_Action
+        meta_files = list(self.Needs_Action_dir.glob("FILE_integration_test_meta.md"))
+        self.assertTrue(len(meta_files) > 0, "Metadata file should be created in Needs_Action")
 
         # Verify content of the metadata file
         meta_content = meta_files[0].read_text()

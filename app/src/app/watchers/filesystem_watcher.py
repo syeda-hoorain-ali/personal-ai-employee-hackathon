@@ -1,3 +1,4 @@
+from typing import NoReturn, Optional
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
@@ -9,20 +10,22 @@ from ..logging_config import get_logger
 
 class DropFolderHandler(FileSystemEventHandler):
     def __init__(self, vault_path: str):
-        self.needs_action = Path(vault_path) / 'Needs-Action'
+        self.needs_action = Path(vault_path) / 'Needs_Action'
         self.logger = get_logger(self.__class__.__name__)
 
     def on_created(self, event):
         if event.is_directory:
             return
-        source = Path(event.src_path)
+        event.src_path
+        source = Path(str(event.src_path))
+        filename = source.name
         try:
             if source.suffix.lower() == '.md':
                 # Only process files that don't already have the FILE_ prefix, EMAIL_ prefix, or _meta suffix
                 # This prevents the infinite loop when the handler creates its own files
-                if not source.name.startswith('FILE_') and not source.name.startswith('EMAIL_') and not source.name.endswith('_meta.md'):
-                    # Move the file from Inbox to Needs-Action to indicate it needs processing
-                    dest = self.needs_action / source.name
+                if not filename.startswith('FILE_') and not filename.startswith('EMAIL_') and not filename.endswith('_meta.md'):
+                    # Move the file from Inbox to Needs_Action to indicate it needs processing
+                    dest = self.needs_action / filename
                     shutil.move(str(source), str(dest))
                     self.logger.info(f"Moved file from {source} to {dest}")
 
@@ -30,14 +33,14 @@ class DropFolderHandler(FileSystemEventHandler):
                     self.create_metadata(dest, dest)
                 else:
                     # Skip processing files that were created by the system itself
-                    self.logger.debug(f"Skipping system-created file: {source.name}")
+                    self.logger.debug(f"Skipping system-created file: {filename}")
         except Exception as e:
             self.logger.error(f"Error processing created file {source}: {e}")
 
     def on_modified(self, event):
         if event.is_directory:
             return
-        source = Path(event.src_path)
+        source = Path(str(event.src_path))
         try:
             if source.suffix.lower() == '.md':
                 # Only process files that don't already have the FILE_ prefix, EMAIL_ prefix, or _meta suffix
@@ -54,7 +57,7 @@ class DropFolderHandler(FileSystemEventHandler):
     def on_deleted(self, event):
         if event.is_directory:
             return
-        source = Path(event.src_path)
+        source = Path(str(event.src_path))
         try:
             self.logger.info(f"Detected deletion of file: {source}")
         except Exception as e:
@@ -81,11 +84,11 @@ New file dropped for processing.
 
 
 class FileSystemWatcher(BaseWatcher):
-    def __init__(self, vault_path: str, watch_path: str = None):
+    def __init__(self, vault_path: str, watch_path: Optional[str] = None):
         super().__init__(vault_path)
 
-        # Monitor the Inbox directory for incoming files, not Needs-Action
-        # This prevents the infinite loop when the watcher creates files in Needs-Action
+        # Monitor the Inbox directory for incoming files, not Needs_Action
+        # This prevents the infinite loop when the watcher creates files in Needs_Action
         self.watch_path = Path(watch_path) if watch_path else self.vault_path / 'Inbox'
 
         # Validate watch path exists
@@ -103,7 +106,8 @@ class FileSystemWatcher(BaseWatcher):
 
     def create_action_file(self, item) -> Path:
         # This method is kept for compatibility with the base class
-        pass
+        # Return a dummy path since this is just for compatibility
+        return Path("")
 
     def start_monitoring(self):
         """Start monitoring the specified directory for file changes."""
