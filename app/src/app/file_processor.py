@@ -141,8 +141,8 @@ class FileProcessor:
         try:
             self.logger.info(f"Triggering Claude Code to process: {file_path}")
 
-            # Create a prompt that tells Claude Code to use the Needs_Action-processor skill
-            prompt = f'Use the Needs_Action-processor skill to process files in the Needs_Action folder. The file {file_path} needs processing according to the Company Handbook rules.'
+            # Create a prompt that tells Claude Code to use the needs-action-processor skill
+            prompt = f'Use the needs-action-processor skill to process files in the Needs_Action folder. The file {file_path} needs processing according to the Company Handbook rules.'
 
             # Execute Claude Code with the prompt in non-interactive mode
             result = subprocess.run(

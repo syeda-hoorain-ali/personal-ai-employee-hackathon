@@ -15,3 +15,59 @@ This is a hackathon project to build an autonomous AI employee that can manage p
 - Human-in-the-loop approval system for sensitive actions
 - Ralph Wiggum loop for persistent task completion
 - Multiple achievement tiers (Bronze to Platinum)
+
+## Hackathon Tiers
+
+### **Bronze Tier: Foundation (Minimum Viable Deliverable)**
+
+Estimated time: 8-12 hours
+
+- [X] Obsidian vault with Dashboard.md and Company_Handbook.md
+- [X] One working Watcher script (Gmail OR file system monitoring)
+- [X] Claude Code successfully reading from and writing to the vault
+- [X] Basic folder structure: /Inbox, /Needs_Action, /Done
+- [X] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+
+### **Silver Tier: Functional Assistant**
+
+Estimated time: 20-30 hours
+
+- [X] All Bronze requirements
+- [X] Two or more Watcher scripts (e.g., Gmail + Whatsapp + LinkedIn)
+- [ ] Automatically Post on LinkedIn about business to generate sales
+- [ ] Claude reasoning loop that creates Plan.md files
+- [ ] One working MCP server for external action (e.g., sending emails)
+- [X] Human-in-the-loop approval workflow for sensitive actions
+- [ ] Basic scheduling via cron or Task Scheduler
+- [ ] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+
+### **Gold Tier: Autonomous Employee**
+
+Estimated time: 40+ hours
+
+- [ ] All Silver requirements
+- [ ] Full cross-domain integration (Personal + Business)
+- [ ] Create accounting system for your business in Xero ( [https://www.xero.com/](https://www.xero.com/) ) and integrate it with its MCP Server ( [https://github.com/XeroAPI/xero-mcp-server](https://github.com/XeroAPI/xero-mcp-server) )
+- [ ] Integrate Facebook and Instagram and post messages and generate summary
+- [ ] Integrate Twitter (X) and post messages and generate summary
+- [ ] Multiple MCP servers for different action types
+- [ ] Weekly Business and Accounting Audit with CEO Briefing generation
+- [ ] Error recovery and graceful degradation
+- [ ] Comprehensive audit logging
+- [ ] Ralph Wiggum loop for autonomous multi-step task completion
+- [ ] Documentation of your architecture and decisions
+
+### **Platinum Tier: Enterprise Solution**
+
+Estimated time: 80+ hours
+
+- [ ] All Gold requirements
+- [ ] Advanced AI reasoning with predictive capabilities
+- [ ] Multi-user support with role-based access controls
+- [ ] Advanced reporting and analytics dashboard
+- [ ] Integration with enterprise systems (CRM, ERP, etc.)
+- [ ] Advanced security features and compliance
+- [ ] Scalable infrastructure with load balancing
+- [ ] Advanced error handling and self-healing capabilities
+- [ ] Complete documentation suite and user guides
+- [ ] Performance optimization and caching strategies
