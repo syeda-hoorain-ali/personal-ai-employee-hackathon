@@ -13,10 +13,9 @@ import re
 
 def read_company_handbook(vault_path):
     """Read the Company Handbook rules."""
-    handbook_path = os.path.join(vault_path, "Company_Handbook.md")
-    if os.path.exists(handbook_path):
-        with open(handbook_path, 'r', encoding='utf-8') as f:
-            return f.read()
+    handbook_path = Path(vault_path) / "Company_Handbook.md"
+    if handbook_path.exists():
+        return handbook_path.read_text(encoding='utf-8')
     return ""
 
 
