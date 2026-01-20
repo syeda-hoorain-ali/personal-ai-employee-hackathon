@@ -86,7 +86,7 @@ dummy_email: Email = {
                     {'name': 'Content-Transfer-Encoding', 'value': '7bit'}
                 ],
                 'body': {
-                    'size': 96, 
+                    'size': 96,
                     'data':'WW91IGhhdmUgYSBjb25uZWN0aW9uIHJlcXVlc3QNCg0KIE5uYWRvemllIFN0ZXBoZW4gICB3YW50cyB0byAgY29ubmVjdA0KaHR0cHM6Ly93d3cud2VidGFsay5jbw0K'}
             },
             {

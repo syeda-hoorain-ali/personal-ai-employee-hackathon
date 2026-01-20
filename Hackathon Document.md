@@ -364,7 +364,7 @@ Claude uses custom **MCP (Model Context Protocol)** servers to act:
 
 * **WhatsApp/Social MCP:** To send the reply or post the scheduled update.
 * **Browser/Payment MCP:** To log into a payment portal, draft a payment, and stop.
-* **Human-in-the-Loop (HITL):** Claude writes a file: APPROVAL|_REQUIRED_Payment_Client_A.md. It **will not** click "Send" until you move that file to the /Approved folder.
+* **Human-in-the-Loop (HITL):** Claude writes a file: APPROVAL_REQUIRED_Payment_Client_A.md. It **will not** click "Send" until you move that file to the /Approved folder.
 
 ## **Recommended MCP Servers**
 
