@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: LinkedIn Scheduler API
+  description: API for scheduling LinkedIn posts as part of the Silver Tier automation
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /schedule-post:
+    post:
+      summary: Schedule a LinkedIn post
+      description: Creates a scheduled LinkedIn post based on the provided content and timing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduledPostRequest'
+      responses:
+        '201':
+          description: Post successfully scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledPostResponse'
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+
+  /generate-content:
+    post:
+      summary: Generate LinkedIn post content
+      description: Generates business-focused content for LinkedIn posts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentGenerationRequest'
+      responses:
+        '200':
+          description: Content successfully generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentGenerationResponse'
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    ScheduledPostRequest:
+      type: object
+      required:
+        - content
+        - schedule_time
+        - target_publication_time
+      properties:
+        content:
+          type: string
+          description: The content of the LinkedIn post
+        schedule_time:
+          type: string
+          format: date-time
+          description: When to schedule the post (internal processing time)
+        target_publication_time:
+          type: string
+          format: date-time
+          description: When the post should be published on LinkedIn
+        content_type:
+          type: string
+          enum: [announcement, insight, success, testimonial]
+          description: Type of content being posted
+
+    ScheduledPostResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the scheduled post
+        status:
+          type: string
+          enum: [scheduled, published, failed, pending]
+          description: Current status of the post
+        scheduled_time:
+          type: string
+          format: date-time
+          description: When the post is scheduled to be published
+
+    ContentGenerationRequest:
+      type: object
+      properties:
+        content_type:
+          type: string
+          enum: [announcement, insight, success, testimonial]
+          description: Type of content to generate
+        company_info:
+          $ref: '#/components/schemas/CompanyInfo'
+        topics:
+          type: array
+          items:
+            type: string
+          description: Topics to focus on in the content
+
+    ContentGenerationResponse:
+      type: object
+      required:
+        - content
+        - content_type
+      properties:
+        content:
+          type: string
+          description: Generated LinkedIn post content
+        content_type:
+          type: string
+          enum: [announcement, insight, success, testimonial]
+          description: Type of content that was generated
+        timestamp:
+          type: string
+          format: date-time
+          description: When the content was generated
+
+    CompanyInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Company name
+        industry:
+          type: string
+          description: Industry the company operates in
+        tone:
+          type: string
+          description: Preferred tone for the content

@@ -6,5 +6,10 @@
       "Bash(git --version)",
       "Skill(skill-creator)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "playwright"
+  ],
+  "enableAllProjectMcpServers": true
 }
