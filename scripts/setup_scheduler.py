@@ -57,9 +57,12 @@ def setup_minute_scheduled_task(task_name, script_path):
         print(f"No existing task to delete or error deleting: {e}")
 
 
+    # Define constants
+    SCHEDULER_MESSAGE = "LinkedIn activity monitoring started"
+
     # PowerShell script to create the task
     ps_script = f'''
-    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '"{script_abs_path}" "LinkedIn activity log 2"' -WorkingDirectory "{app_folder}"
+    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '"{script_abs_path}" "{SCHEDULER_MESSAGE}"' -WorkingDirectory "{app_folder}"
 
     # Trigger 1: Run every minute starting now
     $trigger1 = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 1)

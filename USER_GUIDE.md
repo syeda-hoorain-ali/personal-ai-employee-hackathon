@@ -84,8 +84,8 @@ If you want the AI Employee to automatically post on LinkedIn:
 ```
 {
   "linkedin": {
-    "email": "your_email@example.com",
-    "password": "your_password"
+    "email": "YOUR_LINKEDIN_EMAIL",
+    "password": "YOUR_LINKEDIN_PASSWORD"
   }
 }
 ```

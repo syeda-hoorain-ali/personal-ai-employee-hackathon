@@ -57,9 +57,12 @@ def setup_startup_task(task_name, script_path):
         print(f"No existing task to delete or error deleting: {e}")
 
 
-   # PowerShell script to create the task
+    # Define constants
+    STARTUP_MESSAGE = "System startup notification"
+
+    # PowerShell script to create the task
     ps_script = f'''
-    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '"{script_abs_path}" "Your pc have started"' -WorkingDirectory "{app_folder}"
+    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '"{script_abs_path}" "{STARTUP_MESSAGE}"' -WorkingDirectory "{app_folder}"
 
 
     # Create trigger for startup

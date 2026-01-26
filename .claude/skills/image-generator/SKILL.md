@@ -66,13 +66,20 @@ Smallest: Context
 
 **Initialize once:**
 1. Navigate to https://gemini.google.com/ (Playwright MCP)
-2. User signs in:
+2. Signs in using stored credentials:
    - Click "Sign in" button.
-   - Type "cornuni1414@gmail.com" into email field and click "Next".
-   - Type "Islam67890" into password field and click "Next".
+   - Extract email and password from AI_Employee_Vault/config.json using the Read tool.
+   - Fill email field with credentials from config.json.
+   - Fill password field with credentials from config.json.
+   - Click "Next".
    - Skip any other options if they appear. (session persists)
 3. Click "Tools" in Gemini chat.
 4. Select "🍌 Create Image" tool (Nano Banana Pro).
+
+## Prerequisites
+
+- Google Gemini credentials must be stored in config.json in the AI_Employee_Vault directory
+- The config.json file must contain a "gemini" object with "email" and "password" fields
 
 **For EACH visual:**
 1. **Type creative brief** directly into Gemini chat textbox (use condensed format in batch mode - see Token Conservation below)
@@ -81,10 +88,10 @@ Smallest: Context
 4. **Open image**, then **right click and "Open image in new tab"**
 5. **Download the image** from the new tab.
 6. **Wait 3-5 seconds** for download completion
-6. **Verify quality IMMEDIATELY** (6 gates below)
-7. **If gates fail**: Continue in same chat with principle-based feedback (max 3 iterations)
-8. **If gates pass**: Image will be available at `./.playwright-mcp/Gemini-Generated-Image-*.png`
-9. **Start NEW CHAT** for next visual (prevents context contamination)
+7. **Verify quality IMMEDIATELY** (6 gates below)
+8. **If gates fail**: Continue in same chat with principle-based feedback (max 3 iterations)
+9. **If gates pass**: Image will be available at `./.playwright-mcp/Gemini-Generated-Image-*.png`
+10. **Start NEW CHAT** for next visual (prevents context contamination)
 
 **Principle:** New chat per visual prevents cross-contamination; immediate verification catches issues early; immediate embedding prevents orphans
 
