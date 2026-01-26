@@ -34,12 +34,12 @@ Estimated time: 20-30 hours
 
 - [X] All Bronze requirements
 - [X] Two or more Watcher scripts (e.g., Gmail + Whatsapp + LinkedIn)
-- [ ] Automatically Post on LinkedIn about business to generate sales
+- [X] Automatically Post on LinkedIn about business to generate sales
 - [ ] Claude reasoning loop that creates Plan.md files
 - [ ] One working MCP server for external action (e.g., sending emails)
 - [X] Human-in-the-loop approval workflow for sensitive actions
-- [ ] Basic scheduling via cron or Task Scheduler
-- [ ] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+- [X] Basic scheduling via cron or Task Scheduler
+- [X] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
 ### **Gold Tier: Autonomous Employee**
 
