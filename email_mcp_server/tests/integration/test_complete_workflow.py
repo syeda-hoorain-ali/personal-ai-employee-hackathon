@@ -3,6 +3,7 @@ Complete integration test workflow: Send email to self → Search → Reply → 
 """
 import pytest
 import asyncio
+import logging
 
 from email_mcp_server.email_operations.send import send_email
 from email_mcp_server.email_operations.search import search_emails
@@ -12,6 +13,8 @@ from email_mcp_server.email_operations.management import (
 from email_mcp_server.protocols.imap_smtp import EmailClient
 from email_mcp_server.models.account import EmailAccount, AuthMethod, EmailProvider
 from .config import get_test_config
+
+logger = logging.getLogger(__name__)
 
 class TestCompleteEmailWorkflow:
     """Complete email workflow test: Send → Search → Reply → Move → Archive → Delete."""
@@ -123,11 +126,11 @@ class TestCompleteEmailWorkflow:
                 # If Test folder doesn't exist, try moving to Drafts
                 result = asyncio.run(move_to_folder(email_to_move.id, "Drafts"))
                 if result.success:
-                    print(f"✓ Email moved successfully to Drafts folder")
+                    logger.info(f"✓ Email moved successfully to Drafts folder")
                 else:
-                    print(f"Note: Email move operation status: {getattr(result, 'message', 'Unknown status')}")
+                    logger.info(f"Note: Email move operation status: {getattr(result, 'message', 'Unknown status')}")
         else:
-            print("Note: No emails found to move, skipping move operation")
+            logger.info("Note: No emails found to move, skipping move operation")
 
     def test_step_4_archive_email(self):
         """Step 4: Archive an email."""
@@ -235,11 +238,11 @@ class TestCompleteEmailWorkflow:
             result = asyncio.run(delete_email(email_to_delete.id))
 
             if result.success:
-                print(f"✓ Email deleted successfully")
+                logger.info(f"✓ Email deleted successfully")
             else:
-                print(f"Note: Delete operation status: {getattr(result, 'message', 'Unknown status')}")
+                logger.info(f"Note: Delete operation status: {getattr(result, 'message', 'Unknown status')}")
         else:
-            print("Note: No emails found to delete, but delete functionality is tested separately")
+            logger.info("Note: No emails found to delete, but delete functionality is tested separately")
 
     def test_step_7_verify_functions_exist(self):
         """Step 7: Verify that all functions exist and are accessible."""

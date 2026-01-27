@@ -49,7 +49,7 @@ class AuthHandler:
         Returns:
             Encoded access token
         """
-        to_encode = data.dict()
+        to_encode = data.model_dump()
         expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
         to_encode.update({"exp": expire, "token_type": TokenType.ACCESS})
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
@@ -64,7 +64,7 @@ class AuthHandler:
         Returns:
             Encoded refresh token
         """
-        to_encode = data.dict()
+        to_encode = data.model_dump()
         expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
         to_encode.update({"exp": expire, "token_type": TokenType.REFRESH})
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)

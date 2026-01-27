@@ -3,11 +3,14 @@ Integration test for archiving emails using the Email MCP Server.
 """
 import pytest
 import asyncio
+import logging
 
 from .config import get_test_config
 from email_mcp_server.email_operations.management import archive_email, move_to_folder
 from email_mcp_server.protocols.imap_smtp import EmailClient
 from email_mcp_server.models.account import EmailAccount, AuthMethod, EmailProvider
+
+logger = logging.getLogger(__name__)
 
 class TestArchiveEmail:
     """Integration test for archiving emails."""
@@ -58,12 +61,12 @@ class TestArchiveEmail:
             else:
                 # If no emails found, we'll skip this test but mark it as passed
                 # since it means there's nothing to archive, not that archiving doesn't work
-                print("No emails found to archive, skipping test")
+                logger.info("No emails found to archive, skipping test")
 
         except Exception as e:
             # The archiving functionality might not have been fully implemented yet
             # So we'll mark this as skipped if there's an expected error
-            print(f"Archive test completed: {str(e)}")
+            logger.info(f"Archive test completed: {str(e)}")
 
     def test_move_email_to_archive_folder(self):
         """Test moving an email to the archive folder directly."""

@@ -4,7 +4,6 @@ Configuration for integration tests that connect to actual email servers.
 from dataclasses import dataclass
 from dotenv import load_dotenv
 from email_mcp_server.config.settings import settings
-from pydantic import model_validator
 
 # Load environment variables from .env file
 load_dotenv()
@@ -49,7 +48,6 @@ class EmailTestConfig:
         if self.enable_integration_tests is False:  # Default value
             self.enable_integration_tests = settings.enable_integration_tests or False
 
-    @model_validator(mode='before')
     def validate(self) -> 'EmailTestConfig':
         """Validate that all required configuration is present."""
         if not self.enable_integration_tests:

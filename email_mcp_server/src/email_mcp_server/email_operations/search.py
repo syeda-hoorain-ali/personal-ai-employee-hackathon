@@ -4,6 +4,7 @@ Email search functionality for the Email MCP Server.
 from typing import Dict, Any
 from datetime import datetime
 import logging
+import uuid
 from ..models.response import SearchEmailsResponse, SearchResult
 from ..models.account import AuthMethod, EmailAccount, EmailProvider
 from ..protocols.imap_smtp import EmailClient
@@ -72,7 +73,7 @@ async def search_emails(params: Dict[str, Any]) -> SearchEmailsResponse:
 
         # Log the operation
         operation_log = OperationLog(
-            id=f"search_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(query) % 10000}",
+            id=f"search_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}",
             operation_type=OperationType.SEARCH,
             account_id=mock_account.id,
             timestamp=datetime.now(),

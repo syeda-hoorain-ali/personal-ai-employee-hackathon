@@ -5,6 +5,7 @@ Includes move, archive, mark read/unread, importance, and folder operations.
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
+import uuid
 from ..models.response import (
     MoveEmailResponse, MarkEmailResponse, DeleteEmailResponse,
     SendEmailResponse
@@ -47,7 +48,7 @@ async def move_email(email_id: str, destination: str) -> MoveEmailResponse:
         if success:
             # Log the operation
             operation_log = OperationLog(
-                id=f"move_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(email_id) % 10000}",
+                id=f"move_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}",
                 operation_type=OperationType.MOVE,
                 account_id=mock_account.id,
                 timestamp=datetime.now(),
@@ -131,7 +132,7 @@ async def mark_email(email_id: str, read: Optional[bool] = None,
 
             # Log the operation
             operation_log = OperationLog(
-                id=f"mark_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(email_id) % 10000}",
+                id=f"mark_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}",
                 operation_type=OperationType.MARK,
                 account_id=account.id,
                 timestamp=datetime.now(),
@@ -280,7 +281,7 @@ async def delete_email(email_id: str) -> DeleteEmailResponse:
         if success:
             # Log the operation
             operation_log = OperationLog(
-                id=f"delete_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(email_id) % 10000}",
+                id=f"delete_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}",
                 operation_type=OperationType.DELETE,
                 account_id=account.id,
                 timestamp=datetime.now(),

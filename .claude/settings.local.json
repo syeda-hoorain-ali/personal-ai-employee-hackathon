@@ -3,5 +3,10 @@
     "context7",
     "playwright",
     "gmail"
-  ]
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(git remote get-url origin)"
+    ]
+  }
 }

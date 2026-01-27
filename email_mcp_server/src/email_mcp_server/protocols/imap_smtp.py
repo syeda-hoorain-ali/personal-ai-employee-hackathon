@@ -11,11 +11,14 @@ from email import encoders
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import base64
+import logging
 from ..models.email import Email, Attachment
 from ..models.account import EmailAccount
 from ..config.providers import get_provider_config
 from ..email_operations.utils import validate_attachment, sanitize_filename
 from ..config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class EmailClient:
@@ -98,7 +101,7 @@ class EmailClient:
             )
 
             # Login using stored credentials (in a real implementation, you'd have the password/oauth token)
-            print(f"Connecting to IMAP server: {self.provider_config.imap_server}:{self.provider_config.imap_port}")
+            logger.info(f"Connecting to IMAP server: {self.provider_config.imap_server}:{self.provider_config.imap_port}")
 
         except Exception as e:
             raise Exception(f"Failed to connect to IMAP server: {str(e)}")
@@ -230,7 +233,9 @@ class EmailClient:
                         if isinstance(folder_data, bytes):
                             folder_str = folder_data.decode('utf-8')
                         else:
-                            folder_str = ''.join(tuple(data.decode('utf-8') for data in folder_data))
+                            # The else branch is incorrect - folder_data should be bytes
+                            # Skip non-bytes data to avoid errors
+                            continue
 
                         # Parse folder information - typical format is like: (\HasNoChildren) "/" "INBOX"
                         folder_parts = folder_str.split('"')
@@ -387,6 +392,27 @@ class EmailClient:
                 else:
                     body = parsed_email.get_payload(decode=True).decode()
 
+                # Get flags to determine read status and importance level
+                status, flags_data = self.imap_conn.fetch(email_id, '(FLAGS)')
+                flags_str = flags_data[0].decode() if flags_data else ''
+
+                read_status = '\\Seen' in flags_str
+                importance_level = 'high' if '\\Flagged' in flags_str else 'normal'
+
+                # Parse timestamp from email's Date header
+                timestamp = datetime.now()  # Default fallback
+                if date:
+                    try:
+                        # Handle different date formats
+                        timestamp = datetime.strptime(date.replace(',', ''), '%d %b %Y %H:%M:%S %z')
+                    except ValueError:
+                        try:
+                            # Try alternative format
+                            timestamp = datetime.strptime(date.replace(',', ''), '%d %b %Y %H:%M:%S %Z')
+                        except ValueError:
+                            # If parsing fails, use current time
+                            timestamp = datetime.now()
+
                 # Create Email object
                 email_obj = Email(
                     id=email_id.decode(),
@@ -394,9 +420,9 @@ class EmailClient:
                     recipients=[],
                     subject=subject,
                     body=body[:100] + "..." if len(body) > 100 else body,  # Preview
-                    timestamp=datetime.now(),  # In real implementation, parse from email date
-                    read_status=False,  # In real implementation, check flags
-                    importance_level="normal"  # In real implementation, check priority headers
+                    timestamp=timestamp,
+                    read_status=read_status,
+                    importance_level=importance_level
                 )
 
                 emails.append(email_obj)
@@ -475,6 +501,27 @@ class EmailClient:
             else:
                 body = parsed_email.get_payload(decode=True).decode()
 
+            # Get flags to determine read status and importance level
+            status, flags_data = self.imap_conn.fetch(email_id.encode(), '(FLAGS)')
+            flags_str = flags_data[0].decode() if flags_data else ''
+
+            read_status = '\\Seen' in flags_str
+            importance_level = 'high' if '\\Flagged' in flags_str else 'normal'
+
+            # Parse timestamp from email's Date header
+            timestamp = datetime.now()  # Default fallback
+            if date:
+                try:
+                    # Handle different date formats
+                    timestamp = datetime.strptime(date.replace(',', ''), '%d %b %Y %H:%M:%S %z')
+                except ValueError:
+                    try:
+                        # Try alternative format
+                        timestamp = datetime.strptime(date.replace(',', ''), '%d %b %Y %H:%M:%S %Z')
+                    except ValueError:
+                        # If parsing fails, use current time
+                        timestamp = datetime.now()
+
             # Create and return Email object
             email_obj = Email(
                 id=email_id,
@@ -483,9 +530,9 @@ class EmailClient:
                 subject=subject,
                 body=body,
                 html_body=html_body,
-                timestamp=datetime.now(),  # In real implementation, parse from email date
-                read_status=False,  # In real implementation, check flags
-                importance_level="normal",  # In real implementation, check priority headers
+                timestamp=timestamp,
+                read_status=read_status,
+                importance_level=importance_level,
                 attachments=attachments
             )
 
@@ -512,11 +559,15 @@ class EmailClient:
             # In IMAP, moving is done by copying to destination and deleting from source
             if not self.imap_conn:
                 raise Exception("IMAP connection is not established")
+
+            # Before copying, ensure the current folder contains the email
+            # For this implementation, we'll assume the email is in the currently selected folder
+            # In a robust implementation, we would search for the email's current folder first
             result_copy = self.imap_conn.copy(email_id.encode(), destination)
             if result_copy[0] != 'OK':
                 return False
 
-            # Mark original for deletion
+            # Mark original for deletion in the current folder
             self.imap_conn.store(email_id.encode(), '+FLAGS', '\\Deleted')
 
             # Expunge to permanently remove
@@ -556,13 +607,12 @@ class EmailClient:
                 # Login to IMAP server
                 self.imap_conn.login(self.account.email_address, password)
 
-            # Need to select a folder before marking emails
-            # For marking operations, we typically want to work in the INBOX or wherever the email exists
-            # First, let's search for which folder contains this email
-            # For simplicity, we'll assume it's in INBOX, but a more sophisticated implementation
-            # would search across folders to find where the email exists
+            # Need to select the folder where the email exists before marking it
+            # For marking operations, we need to ensure the correct folder is selected
+            # For robustness, consider searching for the email's current folder first
+            # For now, assuming the email is in the currently selected folder or INBOX
 
-            # Select the INBOX folder
+            # Select the INBOX folder as default
             if not self.imap_conn:
                 raise Exception("IMAP connection is not established")
             status, _ = self.imap_conn.select('INBOX')
@@ -691,8 +741,9 @@ class EmailClient:
                 # Login to IMAP server
                 self.imap_conn.login(self.account.email_address, password)
 
-            # Need to select a folder before deleting emails
-            # Select the INBOX folder by default
+            # Need to select the folder where the email exists before deleting it
+            # For robust implementation, determine the current folder of the email_id before attempting to delete it
+            # For now, assuming the email is in INBOX or the currently selected folder
             status, _ = self.imap_conn.select('INBOX')
             if status != 'OK':
                 # If INBOX doesn't work, try selecting any folder

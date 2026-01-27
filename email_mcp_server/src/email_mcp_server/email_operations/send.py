@@ -4,6 +4,7 @@ Email sending functionality for the Email MCP Server.
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
+import uuid
 from ..models.response import SendEmailResponse
 from ..models.account import AuthMethod, EmailAccount, EmailProvider
 from ..protocols.imap_smtp import EmailClient
@@ -112,7 +113,7 @@ async def send_email(params: Dict[str, Any]) -> SendEmailResponse:
 
         # Log the operation
         operation_log = OperationLog(
-            id=f"op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(message_id) % 10000}",
+            id=f"op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}",
             operation_type=OperationType.SEND,
             account_id=account.id,
             timestamp=datetime.now(),

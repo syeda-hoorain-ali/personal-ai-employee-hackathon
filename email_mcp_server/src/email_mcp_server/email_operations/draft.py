@@ -4,6 +4,7 @@ Draft email functionality for the Email MCP Server.
 from typing import Dict, Any, Optional
 from datetime import datetime
 import logging
+import uuid
 from ..models.response import DraftEmailResponse
 from ..models.account import AuthMethod, EmailAccount, EmailProvider
 from ..protocols.imap_smtp import EmailClient
@@ -93,7 +94,7 @@ async def draft_email(params: Dict[str, Any]) -> DraftEmailResponse:
 
         # Log the operation
         operation_log = OperationLog(
-            id=f"draft_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(draft_id) % 10000}",
+            id=f"draft_op_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}",
             operation_type=OperationType.DRAFT,
             account_id=mock_account.id,
             timestamp=datetime.now(),

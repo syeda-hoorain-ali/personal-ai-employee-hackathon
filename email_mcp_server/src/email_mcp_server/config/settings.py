@@ -18,9 +18,6 @@ class EmailSettings(BaseSettings):
     gmail_client_id: Optional[str] = None
     gmail_client_secret: Optional[str] = None
 
-    # Provider settings
-    enable_integration_tests: bool = False
-
     # SMTP settings
     smtp_timeout: int = 30
     smtp_max_retries: int = 3

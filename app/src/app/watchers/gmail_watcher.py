@@ -1,7 +1,9 @@
+import json
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from datetime import datetime
 from pathlib import Path
 from .base_watcher import BaseWatcher
@@ -21,13 +23,11 @@ class GmailWatcher(BaseWatcher):
                 raise FileNotFoundError(f'Credentials file not found: {self.credentials_path}')
 
             # Load JSON-formatted credentials
-            import json
             with open(self.credentials_path, 'r') as token:
                 token_data = json.load(token)
 
             # Create credentials object from token data
             # Load client credentials to get client_id and client_secret
-            import json
             client_creds_path = Path.home() / ".gmail-mcp" / "gcp-oauth.keys.json"
             client_creds = {}
             if client_creds_path.exists():
@@ -55,7 +55,7 @@ class GmailWatcher(BaseWatcher):
                     self.logger.info('Credentials are expired, refreshing...')
                     try:
                         creds.refresh(Request())
-                    except Exception as e:
+                    except RefreshError as e:
                         self.logger.error(f'Error refreshing credentials: {e}')
                         raise
                 else:
