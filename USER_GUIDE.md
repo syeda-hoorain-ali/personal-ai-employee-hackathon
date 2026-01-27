@@ -57,7 +57,7 @@ If you want the AI Employee to monitor your Gmail account:
 3. Select "Application type" as "Desktop application"
 4. Give it a name (e.g., "AI Employee Desktop App")
 5. Click "Create"
-6. Download the credentials file and rename it to `gmail_credentials.json` in this folder
+6. Download the credentials file and rename it to `gcp-oauth.keys.json` in the `~/.gmail-mcp/` directory
 
 ### 5. Add Your Email as a Test User
 1. After creating the OAuth credentials, go back to "APIs & Services" > "OAuth consent screen" > "Audience"
@@ -66,7 +66,7 @@ If you want the AI Employee to monitor your Gmail account:
 4. Click "Save" to save the changes
 
 ### 6. Place the Credentials File
-- Copy the `gmail_credentials.json` file to the main project directory (same directory as `setup.py`)
+- Create the `~/.gmail-mcp/` directory and copy the `gcp-oauth.keys.json` file to it
 
 ## Running the System
 
@@ -74,7 +74,7 @@ If you want the AI Employee to monitor your Gmail account:
 - Get the project files to your computer
 
 ### 2. Open Command Prompt/Terminal
-- Navigate to the project directory where `scripts` folder is located
+- Navigate to the project's root directory where `scripts` folder is located
 
 ### 3. Run the Setup and Start Script
 Execute the following command:
@@ -144,7 +144,7 @@ The system uses `AI_Employee_Vault/Company_Handbook.md` to determine how to proc
 - [ ] Python 3.9+ installed
 - [ ] uv installed
 - [ ] Project files downloaded/cloned
-- [ ] (Optional) Gmail credentials set up and placed in project root
+- [ ] (Optional) Gmail credentials set up in ~/.gmail-mcp/ directory
 - [ ] Run `python scripts/setup.py`
 - [ ] Verify system is monitoring (check Dashboard.md for activity)
 - [ ] Customize Company_Handbook.md with your preferences

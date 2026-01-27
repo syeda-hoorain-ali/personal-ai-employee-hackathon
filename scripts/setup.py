@@ -4,6 +4,7 @@ Setup script for the Personal AI Employee system.
 This script performs all initial setup tasks.
 """
 
+import json
 import os
 import sys
 import subprocess
@@ -103,14 +104,14 @@ def main():
     print()
     print("4. Checking for Gmail credentials...")
 
-    credentials_path = Path("gmail_credentials.json")
+    credentials_path = Path.home() / ".gmail-mcp" / "gcp-oauth.keys.json"
     if not credentials_path.exists():
-        print("[WARNING] Gmail credentials file not found.")
+        print("[WARNING] Gmail credentials file not found at ~/.gmail-mcp/gcp-oauth.keys.json")
         print("   To enable Gmail monitoring, you need to:")
         print("   1. Create a Google Cloud project")
         print("   2. Enable Gmail API")
-        print("   3. Download credentials as 'gmail_credentials.json'")
-        print("   4. Place it in the main project directory")
+        print("   3. Download credentials as 'gcp-oauth.keys.json'")
+        print("   4. Place it in ~/.gmail-mcp/ directory")
         print()
         # Automatically continue without Gmail monitoring in non-interactive mode
         print("Continuing without Gmail monitoring...")
@@ -120,50 +121,95 @@ def main():
             print("[ERROR] Setup cancelled. Please follow the instructions above to set up Gmail credentials.")
             return 1
     else:
-        print("[SUCCESS] Gmail credentials found")
+        print("[SUCCESS] Gmail credentials found at ~/.gmail-mcp/gcp-oauth.keys.json")
 
         # Try to authenticate
         print("[INFO] Authenticating with Gmail...")
         try:
-            from google.auth.transport.requests import Request
-            from google_auth_oauthlib.flow import InstalledAppFlow
-            from google.auth.exceptions import RefreshError
-            import pickle
-
-            SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
-
             # Try to load existing token
-            token_path = Path("token.pickle")
+            token_path = Path.home() / ".gmail-mcp" / "credentials.json"
             creds = None
 
-            if token_path.exists() :
-                with open(token_path, 'rb') as token:
-                    creds = pickle.load(token)
+            if token_path.exists():
+                with open(token_path, 'r') as token:
+                    token_data = json.load(token)
 
-            # If there are no valid credentials, get new ones
+                # Create credentials object from token data
+                from google.oauth2.credentials import Credentials
+                creds = Credentials(
+                    token=token_data.get('access_token'),
+                    refresh_token=token_data.get('refresh_token'),
+                    id_token=token_data.get('id_token'),
+                    token_uri=token_data.get('token_uri', 'https://oauth2.googleapis.com/token'),
+                    client_id=token_data.get('client_id'),
+                    client_secret=token_data.get('client_secret'),
+                    scopes=token_data.get('scopes', ['https://www.googleapis.com/auth/gmail.readonly'])
+                )
+
+            # If there are no valid credentials, get new ones using the npx command
             if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
-                    try:
-                        creds.refresh(Request())
-                    except RefreshError:
-                        # Need to re-authenticate
-                        print("   Need to re-authenticate with Google...")
-                else:
-                    print("   Authenticating with Google for the first time...")
-                    print("   A browser window will open for authentication.")
-                    print("   Please complete the authentication process.")
+                print("   Running npx command to authenticate and create credentials...")
+                print("   A browser window will open for authentication.")
+                print("   Please complete the authentication process.")
 
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        str(credentials_path), SCOPES)
-                    creds = flow.run_local_server(port=0)
+                try:
+                    result = subprocess.run([
+                        "npx", "-y", "@gongrzhe/server-gmail-autoauth-mcp", "auth"
+                    ], shell=True, capture_output=True, text=True)
 
-                # Save credentials for next run
-                with open(token_path, 'wb') as token:
-                    pickle.dump(creds, token)
+                    if result.returncode != 0:
+                        print("   Gmail authentication failed.")
+                        print(f"   Error: {result.stderr}")
+                        print("   Try running command manually: 'npx -y @gongrzhe/server-gmail-autoauth-mcp auth'")
+                    else:
+                        print("   Gmail authentication completed successfully")
+
+                        # Reload the credentials after the npx command creates them
+                        if token_path.exists():
+                            with open(token_path, 'r') as token:
+                                token_data = json.load(token)
+
+                            from google.oauth2.credentials import Credentials
+                            creds = Credentials(
+                                token=token_data.get('access_token'),
+                                refresh_token=token_data.get('refresh_token'),
+                                id_token=token_data.get('id_token'),
+                                token_uri=token_data.get('token_uri', 'https://oauth2.googleapis.com/token'),
+                                client_id=token_data.get('client_id'),
+                                client_secret=token_data.get('client_secret'),
+                                scopes=token_data.get('scopes', ['https://www.googleapis.com/auth/gmail.readonly'])
+                            )
+                except Exception as e:
+                    print(f"   Error running npx command: {e}")
+                    print("   Gmail authentication failed.")
 
                 print("[SUCCESS] Gmail authentication completed successfully")
             else:
                 print("[SUCCESS] Gmail credentials are valid")
+
+            # Register MCP servers after successful Gmail authentication
+            print("[INFO] Registering MCP servers...")
+            try:
+                import sys
+
+                # Run MCP server registration commands
+                mcp_commands = [
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "gmail", "--", "npx", "-y", "@gongrzhe/server-gmail-autoauth-mcp"],
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "context7", "--", "npx", "-y", "@upstash/context7-mcp"],
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "playwright", "--", "npx", "-y", "@playwright/mcp@latest"]
+                ]
+
+                for cmd in mcp_commands:
+                    print(f"[INFO] Running: {' '.join(cmd)}")
+                    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                    if result.returncode == 0:
+                        print(f"[SUCCESS] MCP server registered: {cmd[4]}")
+                    else:
+                        print(f"[ERROR] Failed to register MCP server {cmd[4]}: {result.stderr}")
+
+            except Exception as e:
+                print(f"[WARNING] Error registering MCP servers: {e}")
+
         except ImportError:
             print("[WARNING] Google libraries not available, skipping authentication")
             print("   Run 'uv sync' to install Google dependencies")
@@ -240,19 +286,14 @@ def main():
         return 1
 
     # Add Gmail watcher if credentials are available
-    credentials_path = Path("gmail_credentials.json")
-    token_path = Path("token.pickle")
+    credentials_path = Path.home() / ".gmail-mcp" / "credentials.json"
 
-    if credentials_path.exists() and token_path.exists():
+    if credentials_path.exists():
         try:
             from app.watchers.gmail_watcher import GmailWatcher
-            import pickle
 
-            # Load credentials
-            with open(token_path, 'rb') as token:
-                creds = pickle.load(token)
-
-            gmail_watcher = GmailWatcher(vault_path, str(token_path))
+            # Initialize Gmail watcher with the token path (will handle JSON loading)
+            gmail_watcher = GmailWatcher(vault_path, str(credentials_path))
             orchestrator.add_watcher(gmail_watcher)
             print("[SUCCESS] Gmail watcher added and configured")
         except Exception as e:
@@ -260,7 +301,7 @@ def main():
             print("   Continuing with file system watcher only")
     else:
         print("[INFO] Gmail credentials not found - starting with file system watcher only")
-        print("   To enable Gmail monitoring: place gmail_credentials.json and token.pickle in the main directory")
+        print("   To enable Gmail monitoring: place gcp-oauth.keys.json in ~/.gmail-mcp/ and run: 'npx -y @gongrzhe/server-gmail-autoauth-mcp auth'")
 
     print("[SUCCESS] All available watchers configured")
     print("\nStarting watchers...")
@@ -275,7 +316,7 @@ def main():
         print("[SUCCESS] All watchers started successfully")
         print("\nAI Employee is now monitoring for tasks...")
         print("   • File system: Monitoring AI_Employee_Vault/Needs_Action/ for .md files")
-        if credentials_path.exists() and token_path.exists():
+        if credentials_path.exists():
             print("   • Gmail: Monitoring your Gmail account for important emails")
         print("   • Activity will be logged to the Dashboard.md file")
 
