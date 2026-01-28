@@ -34,4 +34,4 @@ def test_models_imports():
     assert SendEmailResponse is not None
     assert ErrorResponse is not None
 
-    print("All model modules imported successfully!")
+    logger.info("All model modules imported successfully!")

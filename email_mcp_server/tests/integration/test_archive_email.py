@@ -92,12 +92,12 @@ class TestArchiveEmail:
                 assert result.success, f"Failed to move email {email_id} to archive: {getattr(result, 'message', 'Unknown error')}"
                 assert result.moved_to == "archive", f"Email should be moved to archive, but was moved to {result.moved_to}"
 
-                print(f"Email {email_id} moved to archive folder successfully")
+                logger.info(f"Email {email_id} moved to archive folder successfully")
             else:
-                print("No emails found to move to archive, skipping test")
+                logger.info("No emails found to move to archive, skipping test")
 
         except Exception as e:
-            print(f"Move to archive test completed: {str(e)}")
+            logger.info(f"Move to archive test completed: {str(e)}")
 
 
 # Standalone function to run the archive test
@@ -106,7 +106,7 @@ def run_archive_test():
     config = get_test_config()
 
     if not config.enable_integration_tests:
-        print("Integration test is disabled. Set ENABLE_INTEGRATION_TESTS=true and provide credentials.")
+        logger.info("Integration test is disabled. Set ENABLE_INTEGRATION_TESTS=true and provide credentials.")
         return
 
     print("Running email archive test...")

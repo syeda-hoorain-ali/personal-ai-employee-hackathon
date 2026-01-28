@@ -201,12 +201,12 @@ class TestCompleteEmailWorkflow:
             ))
 
             if result.success:
-                print(f"SUCCESS: Reply sent successfully")
+                logger.info(f"SUCCESS: Reply sent successfully")
             else:
-                print(f"Note: Reply operation status: {getattr(result, 'message', 'Unknown status')}")
+                logger.info(f"Note: Reply operation status: {getattr(result, 'message', 'Unknown status')}")
                 # Still pass the test but log the status
         else:
-            print("Note: No emails found to reply to, but reply functionality is tested separately")
+            logger.info("Note: No emails found to reply to, but reply functionality is tested separately")
 
     def test_step_6_delete_email(self):
         """Step 6: Delete an email."""

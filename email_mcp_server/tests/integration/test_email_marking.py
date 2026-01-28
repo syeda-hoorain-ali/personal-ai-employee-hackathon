@@ -4,10 +4,13 @@ Integration tests for email marking functionality (read/unread, importance).
 import sys
 import pytest
 import asyncio
+import logging
 
 from .config import get_test_config
 from email_mcp_server.email_operations.management import mark_email
 from email_mcp_server.models.account import EmailAccount, AuthMethod, EmailProvider
+
+logger = logging.getLogger(__name__)
 
 
 class TestEmailMarking:
@@ -383,9 +386,9 @@ def run_email_marking_tests():
         tester.test_mark_email_importance_high()
         tester.test_mark_email_both_read_and_importance()
         tester.test_invalid_importance_level()
-        print("All email marking tests completed successfully!")
+        logger.info("All email marking tests completed successfully!")
     except Exception as e:
-        print(f"Email marking tests failed: {e}")
+        logger.info(f"Email marking tests failed: {e}")
         raise
 
 

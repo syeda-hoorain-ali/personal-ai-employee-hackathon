@@ -100,7 +100,7 @@
 - **Line:** 513
 - **Issue:** Assumes email is in currently selected folder
 - **Suggested Fix:** Search for email's current folder first
-- **Status:** [ ]
+- **Status:** [X]
 
 ### 14. Folder Data Parsing in email_mcp_server/src/email_mcp_server/protocols/imap_smtp.py
 - **Reviewer:** gemini-code-assist[bot]

@@ -3,12 +3,15 @@ Integration tests for email deletion functionality.
 """
 import pytest
 import asyncio
+import logging
 
 from .config import get_test_config
 from email_mcp_server.email_operations.management import delete_email
 from email_mcp_server.email_operations.send import send_email
 from email_mcp_server.protocols.imap_smtp import EmailClient
 from email_mcp_server.models.account import EmailAccount, AuthMethod, EmailProvider
+
+logger = logging.getLogger(__name__)
 
 
 class TestEmailDelete:
@@ -134,9 +137,9 @@ class TestEmailDelete:
 
         # Note: This might fail or succeed depending on IMAP implementation
         # The important thing is that it doesn't crash
-        print(f"Attempted to delete non-existent email, success: {result.success}")
+        logger.info(f"Attempted to delete non-existent email, success: {result.success}")
         if not result.success:
-            print(f"Expected failure message: {getattr(result, 'message', 'No error message')}")
+            logger.info(f"Expected failure message: {getattr(result, 'message', 'No error message')}")
 
 
 # Standalone function to run the delete email tests
@@ -145,10 +148,10 @@ def run_delete_email_tests():
     config = get_test_config()
 
     if not config.enable_integration_tests:
-        print("Integration tests are disabled. Set ENABLE_INTEGRATION_TESTS=true and provide credentials.")
+        logger.info("Integration tests are disabled. Set ENABLE_INTEGRATION_TESTS=true and provide credentials.")
         return
 
-    print("Running email deletion tests...")
+    logger.info("Running email deletion tests...")
 
     tester = TestEmailDelete()
     tester.setup_class()
@@ -157,10 +160,10 @@ def run_delete_email_tests():
         tester.test_delete_single_email()
         tester.test_delete_multiple_emails()
         tester.test_delete_nonexistent_email()
-        print("\n🎉 All email deletion tests completed successfully!")
-        print("Email delete functionality works correctly!")
+        logger.info("\n🎉 All email deletion tests completed successfully!")
+        logger.info("Email delete functionality works correctly!")
     except Exception as e:
-        print(f"\n❌ Email deletion tests failed: {e}")
+        logger.info(f"\n❌ Email deletion tests failed: {e}")
         raise
 
 

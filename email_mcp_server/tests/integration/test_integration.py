@@ -3,6 +3,7 @@ Integration tests for the Email MCP Server that connect to actual email servers.
 """
 import pytest
 import asyncio
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -11,6 +12,8 @@ from email_mcp_server.protocols.imap_smtp import EmailClient
 from email_mcp_server.models.account import EmailAccount, AuthMethod, EmailProvider
 from email_mcp_server.models.email import Email
 from email_mcp_server.email_operations.send import send_email
+
+logger = logging.getLogger(__name__)
 
 
 class TestEmailIntegration:
@@ -47,7 +50,7 @@ class TestEmailIntegration:
         assert result.success, f"Email sending failed: {getattr(result, 'message', 'Unknown error')}"
         assert result.message_id is not None, "Message ID should be returned after successful send"
 
-        print(f"Email sent successfully with message ID: {result.message_id}")
+        logger.info(f"Email sent successfully with message ID: {result.message_id}")
 
     def test_connect_to_email_server(self):
         """Test connecting to email server via IMAP/SMTP."""
@@ -57,7 +60,7 @@ class TestEmailIntegration:
         # Test SMTP connection
         try:
             email_client.connect_smtp()
-            print("Successfully connected to SMTP server")
+            logger.info("Successfully connected to SMTP server")
         except Exception as e:
             pytest.fail(f"Failed to connect to SMTP server: {e}")
         finally:
@@ -66,7 +69,7 @@ class TestEmailIntegration:
         # Test IMAP connection
         try:
             email_client.connect_imap()
-            print("Successfully connected to IMAP server")
+            logger.info("Successfully connected to IMAP server")
         except Exception as e:
             pytest.fail(f"Failed to connect to IMAP server: {e}")
         finally:
@@ -78,7 +81,7 @@ class TestEmailIntegration:
 
         try:
             folders = email_client.list_folders()
-            print(f"Found {len(folders)} folders: {[f['name'] for f in folders]}")
+            logger.info(f"Found {len(folders)} folders: {[f['name'] for f in folders]}")
 
             # Verify standard folders exist
             folder_names = [f['name'].lower() for f in folders]
@@ -101,14 +104,14 @@ class TestEmailIntegration:
                 limit=5
             )
 
-            print(f"Found {len(emails)} emails matching the search criteria")
+            logger.info(f"Found {len(emails)} emails matching the search criteria")
 
             # At least verify the function returned without error
             assert isinstance(emails, list), "Search should return a list of emails"
 
         except Exception as e:
             # This might fail if no emails match the criteria, which is fine
-            print(f"Search test completed with potential expected error: {e}")
+            logger.info(f"Search test completed with potential expected error: {e}")
         finally:
             email_client.disconnect_imap()
 
@@ -125,7 +128,7 @@ class TestEmailIntegration:
                 html_body="<p>This is a <strong>test draft</strong> created by the Email MCP Server integration test.</p>"
             )
 
-            print(f"Draft created with ID: {draft_id}")
+            logger.info(f"Draft created with ID: {draft_id}")
             assert draft_id is not None, "Draft ID should be returned after successful creation"
 
         except Exception as e:
@@ -140,16 +143,16 @@ def run_integration_tests():
     config = get_test_config()
 
     if not config.enable_integration_tests:
-        print("Integration tests are disabled. Set ENABLE_INTEGRATION_TESTS=true and provide credentials.")
+        logger.info("Integration tests are disabled. Set ENABLE_INTEGRATION_TESTS=true and provide credentials.")
         return
 
-    print("Running Email MCP Server integration tests...")
+    logger.info("Running Email MCP Server integration tests...")
 
     # This would typically be run with pytest, but we can demonstrate the concept
     tester = TestEmailIntegration()
     tester.setup_class()
 
-    print("All integration tests completed successfully!")
+    logger.info("All integration tests completed successfully!")
 
 
 if __name__ == "__main__":

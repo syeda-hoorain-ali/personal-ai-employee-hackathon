@@ -2,8 +2,11 @@
 Basic tests for email sending functionality.
 """
 import pytest
+import logging
 
 from email_mcp_server.email_operations.send import send_email
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
@@ -31,7 +34,7 @@ def test_validate_before_sending():
     result = asyncio.run(validate_before_sending(params))
     is_valid, error_msg = result
 
-    print(f"Validation result: is_valid={is_valid}, error_msg={error_msg}")
+    logger.info(f"Validation result: is_valid={is_valid}, error_msg={error_msg}")
     # The email validation may fail for test@example.com, so let's use a more realistic test
     # If validation fails, make sure it's for the expected reason
     if not is_valid:

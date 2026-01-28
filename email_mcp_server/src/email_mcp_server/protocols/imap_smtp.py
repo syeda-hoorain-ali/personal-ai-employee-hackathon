@@ -560,14 +560,52 @@ class EmailClient:
             if not self.imap_conn:
                 raise Exception("IMAP connection is not established")
 
-            # Before copying, ensure the current folder contains the email
-            # For this implementation, we'll assume the email is in the currently selected folder
-            # In a robust implementation, we would search for the email's current folder first
+            # It's crucial to ensure the correct folder is selected before calling copy/store.
+            # For robustness, consider searching for the email's current folder first.
+            # For now, we'll use a search to find which folder contains this email
+            # by trying common folders
+
+            # List of common folders to check
+            folders_to_check = ['INBOX', 'Sent', 'Drafts', 'Archive', 'Trash']
+
+            email_found = False
+            current_folder = 'INBOX'  # Default fallback
+
+            # Try to find which folder contains the email
+            for folder in folders_to_check:
+                try:
+                    status, _ = self.imap_conn.select(folder)
+                    if status == 'OK':
+                        # Search for the specific email ID in this folder
+                        typ, data = self.imap_conn.search(None, 'HEADER Message-ID', email_id)
+                        if data[0]:  # If search returned results
+                            current_folder = folder
+                            email_found = True
+                            break
+                except:
+                    continue  # If we can't access this folder, try the next one
+
+            # If we couldn't find the email in common folders, use INBOX as fallback
+            if not email_found:
+                # Try the currently selected folder
+                try:
+                    # Get current selected folder
+                    status, data = self.imap_conn.select()
+                    if status == 'OK':
+                        # Attempt to copy from current folder anyway
+                        pass
+                except:
+                    # Fallback to INBOX if we can't determine current folder
+                    self.imap_conn.select('INBOX')
+            else:
+                # Select the folder where the email was found
+                self.imap_conn.select(current_folder)
+
             result_copy = self.imap_conn.copy(email_id.encode(), destination)
             if result_copy[0] != 'OK':
                 return False
 
-            # Mark original for deletion in the current folder
+            # Mark original for deletion in the folder where the email was found
             self.imap_conn.store(email_id.encode(), '+FLAGS', '\\Deleted')
 
             # Expunge to permanently remove
