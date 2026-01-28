@@ -175,7 +175,7 @@ async def test_search_emails_tool_functionality():
             sender="sender@example.com",
             recipients=["recipient@example.com"],
             preview="Test body preview",  # Changed from body_preview to preview
-            timestamp=datetime.now(),
+            preview="Test body preview",
             read=False,  # Changed from read_status to read
             has_attachments=False  # Required field
         )
