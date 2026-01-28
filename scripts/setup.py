@@ -10,6 +10,21 @@ import sys
 import subprocess
 from pathlib import Path
 
+def is_admin():
+    """Check if the script is running with administrator privileges."""
+    try:
+        # For Windows
+        if os.name == 'nt':
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        # For Unix-like systems
+        else:
+            return os.geteuid() == 0
+    except AttributeError:
+        # If we can't determine, assume not an admin (safer assumption)
+        return False
+
+
 def run_command(cmd, desc):
     """Run a command and show status."""
     print(f"[INFO] {desc}...")
@@ -24,6 +39,85 @@ def run_command(cmd, desc):
             return False
     except Exception as e:
         print(f"[ERROR] {desc} failed with exception: {e}")
+        return False
+
+
+def setup_linkedin_scheduler():
+    """
+    Set up a scheduled task to run the LinkedIn poster script periodically.
+    Only runs if the script is executed with administrator privileges.
+    """
+    # Check if running as administrator
+    if not is_admin():
+        print("[WARNING] LinkedIn scheduler setup requires administrator privileges.")
+        print("         Skipping LinkedIn scheduler setup.")
+        print("         Please run this script as an administrator to enable automatic LinkedIn posting.")
+        return False
+
+    print("[INFO] Setting up LinkedIn auto-poster scheduler...")
+
+    # Check OS type
+    if os.name != 'nt':  # Not Windows
+        print(f"[WARNING] Task Scheduler is not available on this OS ({sys.platform}).")
+        print("         Skipping LinkedIn scheduler setup.")
+        return False
+
+    task_name = "LinkedInAutoPoster"
+    script_path = Path("app/scripts/linkedin_poster_cli.py").resolve()
+
+    # Verify the script exists
+    if not script_path.exists():
+        print(f"[ERROR] LinkedIn poster script {script_path} does not exist!")
+        return False
+
+    app_folder = script_path.parent.parent.resolve()
+    python_exe = sys.executable
+
+    # First, try to delete the existing task if it exists
+    delete_cmd = ['schtasks', '/delete', '/tn', task_name, '/f']
+    try:
+        subprocess.run(delete_cmd, capture_output=True, text=True, check=False)
+        print(f"[INFO] Deleted existing task '{task_name}' if it existed")
+    except Exception as e:
+        print(f"[INFO] No existing task to delete or error deleting: {e}")
+
+    # PowerShell script to create the task
+    ps_script = f'''
+    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '"{script_path}"' -WorkingDirectory "{app_folder}"
+
+    # Trigger: Run every day at 12:00 PM (noon) - good for business posting
+    $trigger = New-ScheduledTaskTrigger -Daily -At "12:00PM"
+
+    # Settings to ensure task runs reliably
+    $settings = New-ScheduledTaskSettingsSet `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -StartWhenAvailable `
+        -RunOnlyIfNetworkAvailable:$true `
+        -ExecutionTimeLimit (New-TimeSpan -Hours 1) `
+        -MultipleInstances Queue
+
+    # Principal to run whether logged in or not
+    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERNAME" -LogonType ServiceAccount -RunLevel Highest
+
+    # Register the task
+    Register-ScheduledTask -TaskName "{task_name}" -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
+    '''
+
+    try:
+        # Create new task using PowerShell
+        result = subprocess.run(
+            ['powershell', '-Command', ps_script],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(f"[SUCCESS] Successfully created scheduled task '{task_name}'")
+        print(f"[SUCCESS] The task will run '{script_path}' daily at 12:00 PM")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Error creating scheduled task: {e}")
+        print(f"[ERROR] Error output: {e.stderr}")
         return False
 
 def main():
@@ -238,6 +332,11 @@ def main():
         print("[SUCCESS] Gmail components available")
     except ImportError:
         print("[INFO] Gmail components not available (this is OK if Google libraries weren't installed)")
+
+    print()
+    print("[5] Setting up LinkedIn scheduler...")
+    # Set up LinkedIn auto-poster scheduler
+    setup_linkedin_scheduler()
 
     print()
     print("[SUCCESS] Setup completed successfully!")

@@ -8,5 +8,10 @@
     "allow": [
       "Bash(git remote get-url origin)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "playwright"
+  ],
+  "enableAllProjectMcpServers": true
 }
