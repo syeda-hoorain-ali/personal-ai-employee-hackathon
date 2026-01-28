@@ -1,12 +1,12 @@
+import json
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
-import pickle
 from .base_watcher import BaseWatcher
-from app.logging_config import get_logger
 
 class GmailWatcher(BaseWatcher):
     def __init__(self, vault_path: str, credentials_path: str):
@@ -22,9 +22,47 @@ class GmailWatcher(BaseWatcher):
             if not Path(self.credentials_path).exists():
                 raise FileNotFoundError(f'Credentials file not found: {self.credentials_path}')
 
-            # return Credentials.from_authorized_user_file(self.credentials_path)
-            with open(self.credentials_path, 'rb') as token:
-                return pickle.load(token)
+            # Load JSON-formatted credentials
+            with open(self.credentials_path, 'r') as token:
+                token_data = json.load(token)
+
+            # Create credentials object from token data
+            # Load client credentials to get client_id and client_secret
+            client_creds_path = Path.home() / ".gmail-mcp" / "gcp-oauth.keys.json"
+            client_creds = {}
+            if client_creds_path.exists():
+                with open(client_creds_path, 'r') as f:
+                    client_data = json.load(f)
+                    if 'installed' in client_data:
+                        client_creds = client_data['installed']
+
+            # Use the scopes from the token file, but ensure they include the required scopes
+            token_scopes = token_data.get('scopes', ['https://www.googleapis.com/auth/gmail.readonly'])
+
+            creds = Credentials(
+                token=token_data.get('access_token'),
+                refresh_token=token_data.get('refresh_token'),
+                id_token=token_data.get('id_token'),
+                token_uri=token_data.get('token_uri', client_creds.get('token_uri', 'https://oauth2.googleapis.com/token')),
+                client_id=token_data.get('client_id', client_creds.get('client_id')),
+                client_secret=token_data.get('client_secret', client_creds.get('client_secret')),
+                scopes=token_scopes
+            )
+
+            # Validate the credentials and check if they're valid before returning
+            if not creds.valid:
+                if creds.expired and creds.refresh_token:
+                    self.logger.info('Credentials are expired, refreshing...')
+                    try:
+                        creds.refresh(Request())
+                    except RefreshError as e:
+                        self.logger.error(f'Error refreshing credentials: {e}')
+                        raise
+                else:
+                    self.logger.warning('Credentials are not valid and cannot be refreshed')
+                    raise ValueError('Invalid credentials that cannot be refreshed')
+
+            return creds
         except FileNotFoundError:
             self.logger.error(f'Credentials file not found: {self.credentials_path}')
             raise

@@ -1,9 +1,9 @@
 tmpclaude-*
 .env
+.env.*
+!.env.example
 gmail_credentials.json
 token.pickle
 AI_Employee_Vault
 *vault*
 !*vault*.py
-__pycache__
-
