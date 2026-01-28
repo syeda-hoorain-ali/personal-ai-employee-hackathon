@@ -164,7 +164,7 @@ class TestCompleteEmailWorkflow:
             if result.success:
                 print(f"✓ Email archived successfully")
             else:
-                print(f"Note: Archive operation status: {getattr(result, 'message', 'Unknown status')}")
+                # self.logger.info(f"Archive operation status: {getattr(result, 'message', 'Unknown status')}") # Use logging instead of print
         else:
             print("Note: No emails found to archive, but archive functionality is tested separately")
 
