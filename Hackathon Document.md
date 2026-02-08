@@ -95,11 +95,11 @@ This hackathon assumes intermediate technical proficiency:
 4. Set up a UV Python project
 5. Join the Wednesday Research Meeting Zoom link
 
-Hackathon Scope & Tiered Deliverables
+## Hackathon Scope & Tiered Deliverables
 
 To accommodate varying skill levels and time availability, we define three achievement tiers. Choose your target based on your experience and ambition.
 
-## **Bronze Tier: Foundation (Minimum Viable Deliverable)**
+### **Bronze Tier: Foundation (Minimum Viable Deliverable)**
 
 Estimated time: 8-12 hours
 
@@ -1014,34 +1014,34 @@ Suggested oversight schedule:
 The following ASCII diagram illustrates the complete system architecture:
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                    PERSONAL AI EMPLOYEE                         │
-│                    SYSTEM ARCHITECTURE                          │
+│                      PERSONAL AI EMPLOYEE                       │
+│                      SYSTEM ARCHITECTURE                        │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                      EXTERNAL SOURCES                           │
-├─────────────────┬─────────────────┬──────────────────┬──────────┤
-│     Gmail       │    WhatsApp     │     Bank APIs    │  Files   │
-└────────┬────────┴────────┬────────┴─────────┬────────┴────┬─────┘
-         │                 │                  │             │
-         ▼                 ▼                  ▼             ▼
+│                        EXTERNAL SOURCES                         │
+├───────────────┬────────────────┬─────────────────┬──────────────┤
+│     Gmail     │    WhatsApp    │    Bank APIs    │    Files     │
+└───────┬───────┴────────┬───────┴────────┬────────┴───────┬──────┘
+        │                │                │                │
+        ▼                ▼                ▼                ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    PERCEPTION LAYER                             │
-│  ┌───────────────┐ ┌────────────────┐ ┌─────────────────┐       │
-│  │ Gmail Watcher │ │ WhatsApp Watch │ │ Finance Watcher │       │
-│  │    (Python)   │ │  (Playwright)  │ │     (Python)    │       │
-│  └──────┬────────┘ └───────┬────────┘ └────────┬────────┘       │
-└─────────┼──────────────────┼───────────────────┼────────────────┘
-          │                  │                   │
-          ▼                  ▼                   ▼
+│                        PERCEPTION LAYER                         │
+│  ┌─────────────────┐ ┌──────────────────┐ ┌──────────────────┐  │
+│  │  Gmail Watcher  │ │  WhatsApp Watch  │ │ Finance Watcher  │  │
+│  │     (Python)    │ │   (Playwright)   │ │     (Python)     │  │
+│  └────────┬────────┘ └────────┬─────────┘ └────────┬─────────┘  │
+└───────────┼───────────────────┼────────────────────┼────────────┘
+            │                   │                    │
+            ▼                   ▼                    ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    OBSIDIAN VAULT (Local)                       │
+│                     OBSIDIAN VAULT (Local)                      │
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │ /Needs_Action/  │ /Plans/  │ /Done/  │ /Logs/             │  │
 │  ├───────────────────────────────────────────────────────────┤  │
-│  │ Dashboard.md    │ Company_Handbook.md │ Business_Goals.md │  │
+│  │ Dashboard.md  │ Company_Handbook.md  │ Business_Goals.md  │  │
 │  ├───────────────────────────────────────────────────────────┤  │
-│  │ /Pending_Approval/  │  /Approved/  │  /Rejected/          │  │
+│  │ /Pending_Approval/  │ /Approved/  │ /Rejected/            │  │
 │  └───────────────────────────────────────────────────────────┘  │
 └────────────────────────────────┬────────────────────────────────┘
                                  │
@@ -1110,7 +1110,7 @@ If you run python gmail_watcher.py and your internet blips for 5 seconds, the sc
 
 A PM (like **PM2**, **supervisord**, or **Systemd**) acts as a watchdog. It daemonizes your script and monitors its PID.
 
-* **Auto-Restart:** If the process exits with a non-zero code (crash), the PM immediately restarts it2.
+* **Auto-Restart:** If the process exits with a non-zero code (crash), the PM immediately restarts it.
 * **Startup Persistence:** It hooks into the OS init system (e.g., systemd on Linux) to launch the script on boot3.
 * **Logging:** It captures stdout/stderr to log files, which is critical for debugging silent failures over long periods.
 

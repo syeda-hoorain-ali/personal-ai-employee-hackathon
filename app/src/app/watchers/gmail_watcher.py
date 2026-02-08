@@ -1,3 +1,4 @@
+
 import json
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -36,17 +37,17 @@ class GmailWatcher(BaseWatcher):
                     if 'installed' in client_data:
                         client_creds = client_data['installed']
 
-            # Use the scopes from the token file, but ensure they include the required scopes
-            token_scopes = token_data.get('scopes', ['https://www.googleapis.com/auth/gmail.readonly'])
+            token_scopes = ['https://www.googleapis.com/auth/gmail.readonly']
+            token_uri = token_data.get('token_uri', client_creds.get('token_uri', 'https://oauth2.googleapis.com/token'))
 
             creds = Credentials(
                 token=token_data.get('access_token'),
                 refresh_token=token_data.get('refresh_token'),
                 id_token=token_data.get('id_token'),
-                token_uri=token_data.get('token_uri', client_creds.get('token_uri', 'https://oauth2.googleapis.com/token')),
+                token_uri=token_uri,
                 client_id=token_data.get('client_id', client_creds.get('client_id')),
                 client_secret=token_data.get('client_secret', client_creds.get('client_secret')),
-                scopes=token_scopes
+                # scopes=token_scopes
             )
 
             # Validate the credentials and check if they're valid before returning
@@ -148,11 +149,15 @@ message_id: {message['id']}
 - [ ] Archive after processing
 '''
 
+            # Include current date in the filename
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            filename = f'EMAIL_{message["id"]}_{current_date}.md'
+
             # Write with UTF-8 encoding to handle special characters
-            with open(self.needs_action / f'EMAIL_{message["id"]}.md', 'w', encoding='utf-8') as f:
+            with open(self.needs_action / filename, 'w', encoding='utf-8') as f:
                 f.write(content)
 
-            filepath = self.needs_action / f'EMAIL_{message["id"]}.md'
+            filepath = self.needs_action / filename
             self.processed_ids.add(message['id'])
 
             self.logger.info(f'Created action file for email: {filepath}')

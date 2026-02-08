@@ -1,0 +1,13 @@
+{
+  "timestamp": "{{TIMESTAMP}}",
+  "action_type": "{{ACTION_TYPE}}",
+  "actor": "{{ACTOR}}",
+  "target": "{{TARGET}}",
+  "parameters": {{PARAMETERS}},
+  "approval_status": "{{APPROVAL_STATUS}}",
+  "approved_by": "{{APPROVED_BY}}",
+  "result": "{{RESULT}}",
+  "original_file": "{{ORIGINAL_FILE}}",
+  "destination_folder": "{{DESTINATION_FOLDER}}",
+  "detected_intent": "{{DETECTED_INTENT}}"
+}

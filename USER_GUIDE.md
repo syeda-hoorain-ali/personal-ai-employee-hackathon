@@ -25,87 +25,18 @@ The Personal AI Employee is an autonomous system that monitors your digital life
 ## Setting Up Google Credentials (Optional)
 
 If you want the AI Employee to monitor your Gmail account:
-
-### 1. Create a Google Cloud Project
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
-2. Click "Select a project" at the top, then "New Project"
-3. Give your project a name (e.g., "AI Employee") and click "Create"
-
-### 2. Enable Gmail API
-1. In your project dashboard, search for "Gmail API"
-2. Click on "Gmail API" and then "Enable"
-
-### 3. Configure Consent Screen
-1. In the left sidebar, click "APIs & Services" > "OAuth Consent Screen"
-2. Click "Configure Consent Screen"
-3. If prompted with "Google Auth Platform not configured yet", click "Get Started"
-4. Fill in the application information:
-   - Application name: "AI Employee"
-   - User support email: your email
-5. Click "Next"
-6. Select "External" and click "Next"
-7. Fill in the application information:
-   - Contact information: your email
-8. Click "Next"
-9. Check the "I agree" checkbox and click "Continue"
-10. Click "Create"
-
-### 4. Create OAuth 2.0 Credentials
-
-1. From the OAuth overview page, click "Create OAuth Client"
-2. If prompted with "OAuth consent screen not configured", click "Configure Consent Screen" and follow the steps in section 3 above
-3. Select "Application type" as "Desktop application"
-4. Give it a name (e.g., "AI Employee Desktop App")
-5. Click "Create"
-6. Download the credentials file and rename it to `gcp-oauth.keys.json` in the `~/.gmail-mcp/` directory
-
-### 5. Add Your Email as a Test User
-1. After creating the OAuth credentials, go back to "APIs & Services" > "OAuth consent screen" > "Audience"
-2. Under the "Test users" section, click "Add users"
-3. Add your email address that you'll use to authenticate
-4. Click "Save" to save the changes
-
-### 6. Place the Credentials File
-- Create the `~/.gmail-mcp/` directory and copy the `gcp-oauth.keys.json` file to it
+[Gmail setup guide](./guides/gmail-setup-guide.md)
 
 ## Setting Up LinkedIn Credentials (Optional)
 
 If you want the AI Employee to automatically post on LinkedIn:
+[Linkedin setup guide](./guides/linkedin-setup-guide.md)
 
-### 1. Create the Config File
-1. Navigate to the `AI_Employee_Vault` directory in your project
-2. Create a file named `config.json` in this directory
-3. The file structure should be: `AI_Employee_Vault/config.json`
+## Setting Up Xero Credentials (Optional)
 
-### 2. Add Your LinkedIn Credentials
-1. Open the `config.json` file in a text editor
-2. Add your LinkedIn email and password in the following format:
+If you want the AI Employee to manage your accounting and financial data through Xero:
+[Xero setup guide](./guides/xero-setup-guide.md)
 
-```
-{
-  "linkedin": {
-    "email": "YOUR_LINKEDIN_EMAIL",
-    "password": "YOUR_LINKEDIN_PASSWORD"
-  }
-}
-```
-
-### 3. Security Note
-⚠️ **Warning**: Storing credentials in plain text is a security risk. Consider the following:
-- Use a strong, unique password for your LinkedIn account
-- Do not commit this file to version control (it should be in your `.gitignore`)
-- Consider using a dedicated LinkedIn account for automation
-- Change your password regularly
-
-### 4. Configure LinkedIn Auto-Posting
-The system includes a LinkedIn poster script that can automatically post updates:
-1. The script is located at `app/scripts/linkedin_poster_cli.py`
-2. To schedule automatic posts, run the setup script as administrator:
-   ```
-   python scripts/setup.py
-   ```
-3. When prompted, ensure you run with administrator privileges to enable the scheduled task
-4. The system will post daily at 12:00 PM if credentials are properly configured
 
 ## Running the System
 
@@ -184,6 +115,8 @@ The system uses `AI_Employee_Vault/Company_Handbook.md` to determine how to proc
 - [ ] uv installed
 - [ ] Project files downloaded/cloned
 - [ ] (Optional) Gmail credentials set up in ~/.gmail-mcp/ directory
+- [ ] (Optional) LinkedIn credentials set up in AI_Employee_Vault/config.json
+- [ ] (Optional) Xero Custom Connection created and credentials added to environment
 - [ ] Run `python scripts/setup.py`
 - [ ] Verify system is monitoring (check Dashboard.md for activity)
 - [ ] Customize Company_Handbook.md with your preferences

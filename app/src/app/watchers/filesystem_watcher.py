@@ -1,9 +1,9 @@
-from typing import NoReturn, Optional
+from typing import Optional
+from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
 import shutil
-import logging
 from .base_watcher import BaseWatcher
 from ..logging_config import get_logger
 
@@ -24,8 +24,16 @@ class DropFolderHandler(FileSystemEventHandler):
                 # Only process files that don't already have the FILE_ prefix, EMAIL_ prefix, or _meta suffix
                 # This prevents the infinite loop when the handler creates its own files
                 if not filename.startswith('FILE_') and not filename.startswith('EMAIL_') and not filename.endswith('_meta.md'):
+                    # Include current date in the filename when moving to Needs_Action
+                    current_date = datetime.now().strftime("%Y-%m-%d")
+
+                    # Split filename and extension to insert the date before the extension
+                    stem = source.stem
+                    suffix = source.suffix
+                    new_filename = f"{stem}_{current_date}{suffix}"
+
                     # Move the file from Inbox to Needs_Action to indicate it needs processing
-                    dest = self.needs_action / filename
+                    dest = self.needs_action / new_filename
                     shutil.move(str(source), str(dest))
                     self.logger.info(f"Moved file from {source} to {dest}")
 

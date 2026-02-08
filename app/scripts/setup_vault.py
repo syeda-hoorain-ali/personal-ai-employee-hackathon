@@ -32,7 +32,8 @@ def create_directory_structure(base_path: Path):
         'Approved',
         'Rejected',
         'Logs',
-        'Accounting'
+        'Accounting',
+        'References'
     ]
 
     for directory in directories:

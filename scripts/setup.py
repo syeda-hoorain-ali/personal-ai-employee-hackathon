@@ -284,25 +284,40 @@ def main():
             # Register MCP servers after successful Gmail authentication
             print("[INFO] Registering MCP servers...")
             try:
-                import sys
-
                 # Run MCP server registration commands
                 mcp_commands = [
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "gmail", "--", "npx", "-y", "@gongrzhe/server-gmail-autoauth-mcp"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "context7", "--", "npx", "-y", "@upstash/context7-mcp"],
-                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "playwright", "--", "npx", "-y", "@playwright/mcp@latest"]
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "playwright", "--", "npx", "-y", "@playwright/mcp@latest"],
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "xero", "--env", "XERO_CLIENT_ID='${XERO_CLIENT_ID}'", "--env", "XERO_CLIENT_SECRET='${XERO_CLIENT_SECRET}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "twitter-x", "--env", "AUTH_TYPE='oauth2", "--env", "OAUTH2_CLIENT_ID='${X_CLIENT_ID}'", "--env", "OAUTH2_CLIENT_SECRET='${X_CLIENT_SECRET}'", "--env", "OAUTH2_ACCESS_TOKEN='${X_ACCESS_TOKEN}'", "--env", "OAUTH2_REFRESH_TOKEN='${X_REFRESH_TOKEN}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
                 ]
 
                 for cmd in mcp_commands:
                     print(f"[INFO] Running: {' '.join(cmd)}")
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                     if result.returncode == 0:
-                        print(f"[SUCCESS] MCP server registered: {cmd[4]}")
+                        print(f"[SUCCESS] MCP server registered: {cmd[7]}")
                     else:
-                        print(f"[ERROR] Failed to register MCP server {cmd[4]}: {result.stderr}")
+                        print(f"[ERROR] Failed to register MCP server {cmd[7]}: {result.stderr}")
 
             except Exception as e:
                 print(f"[WARNING] Error registering MCP servers: {e}")
+
+            # Register Ralph Loop plugin
+            print("[INFO] Installing Ralph Loop plugin...")
+            try:
+                # Run MCP server registration commands
+                cmd = ["claude", "plugin", "install", "--scope", "project", "ralph-loop@claude-plugins-official"]
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                if result.returncode == 0:
+                    print(f"[SUCCESS] Ralph Loop plugin installed")
+                    print(result.stdout)
+                else:
+                    print(f"[ERROR] Failed to install plugin: {result.stderr}")
+
+            except Exception as e:
+                print(f"[WARNING] Error installing plugin: {e}")
 
         except ImportError:
             print("[WARNING] Google libraries not available, skipping authentication")

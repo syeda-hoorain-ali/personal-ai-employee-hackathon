@@ -43,7 +43,7 @@ Successfully completed all tasks for the Email MCP Server implementation. The pr
 
 ### Testing Framework
 - 20 comprehensive tests passing (100% success rate)
-- Integration tests for sending emails to jagjets133@gmail.com and syedamantashaali6@gmail.com
+- Integration tests for sending emails to jagjets133@gmail.com and user2@gmail.com
 - Complete workflow test: Send → Search → Reply → Move → Archive
 - Unit tests for all core functionality
 - Archive functionality verified and working
@@ -76,4 +76,4 @@ Successfully completed all tasks for the Email MCP Server implementation. The pr
 
 ## Outcome
 
-The Email MCP Server is fully implemented with all functionality working correctly. All 19 tests pass (100% success rate), including critical integration tests that send real emails to the configured Gmail account. The complete email workflow (send → search → reply → move → archive) has been tested and verified. The system successfully sends emails to both jagjets133@gmail.com and syedamantashaali6@gmail.com as demonstrated in the integration tests.
+The Email MCP Server is fully implemented with all functionality working correctly. All 19 tests pass (100% success rate), including critical integration tests that send real emails to the configured Gmail account. The complete email workflow (send → search → reply → move → archive) has been tested and verified. The system successfully sends emails to both jagjets133@gmail.com and user2@gmail.com as demonstrated in the integration tests.

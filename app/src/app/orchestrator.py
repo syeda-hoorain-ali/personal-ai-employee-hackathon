@@ -6,6 +6,7 @@ from typing import List
 from .watchers.base_watcher import BaseWatcher
 from .logging_config import get_logger
 from .file_processor import FileProcessor
+from .ralph_wiggum_controller import RalphWiggumController
 
 
 class FileProcessorComponent:
@@ -111,6 +112,20 @@ class Orchestrator:
                 'check_interval': getattr(watcher, 'check_interval', 'N/A'),
             }
         return status
+
+    def start_reasoning_loop(self, task_description: str, max_iterations: int = 10):
+        """Start a Claude reasoning loop that creates Plan.md files."""
+        self.logger.info(f"Starting reasoning loop for task: {task_description}")
+
+        controller = RalphWiggumController(str(self.vault_path), max_iterations=max_iterations)
+        success = controller.run_reasoning_loop(task_description)
+
+        if success:
+            self.logger.info("Reasoning loop completed successfully")
+        else:
+            self.logger.warning("Reasoning loop did not complete the task")
+
+        return success
 
     def run(self):
         """Run the orchestrator."""

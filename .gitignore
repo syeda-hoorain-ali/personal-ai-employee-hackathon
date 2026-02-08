@@ -7,3 +7,6 @@ token.pickle
 AI_Employee_Vault
 *vault*
 !*vault*.py
+
+*.local
+*.local.*

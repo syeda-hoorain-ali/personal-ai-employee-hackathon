@@ -7,7 +7,7 @@ model: qwen3-coder-plus
 feature: 002-email-mcp-server
 branch: 002-email-mcp-server
 user: dell
-command: "replace hardcoded user1@gmail.com and syedamantashaali6@gmail.com with environment variables"
+command: "replace hardcoded user1@gmail.com and user2@gmail.com with environment variables"
 labels: ["email-mcp-server", "security", "configuration", "environment-variables", "testing"]
 files:
   - "email_mcp_server/tests/email_mcp_server/integration/test_send_email.py"
@@ -23,7 +23,7 @@ tests:
 
 ## Prompt
 
-Replace hardcoded user1@gmail.com and syedamantashaali6@gmail.com with environment variables
+Replace hardcoded user1@gmail.com and user2@gmail.com with environment variables
 
 ## Response
 
@@ -32,7 +32,7 @@ Successfully updated all test files to use environment variables instead of hard
 ### Changes Made
 
 1. **Updated test_send_email.py**: Replaced hardcoded "user1@gmail.com" with `settings.test_recipient` fallback
-2. **Renamed and updated test file**: Renamed `test_send_email_to_syed.py` to `test_send_email_to_recipient.py` and replaced hardcoded "syedamantashaali6@gmail.com" with configurable recipient from environment
+2. **Renamed and updated test file**: Renamed `test_send_email_to_syed.py` to `test_send_email_to_recipient.py` and replaced hardcoded "user2@gmail.com" with configurable recipient from environment
 3. **Verified existing files**: Confirmed that `test_complete_workflow.py` was already using environment variables properly through the config object
 
 ### Benefits

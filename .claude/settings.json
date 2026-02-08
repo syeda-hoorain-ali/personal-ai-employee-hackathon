@@ -8,8 +8,11 @@
       "Bash(git --version)",
       "Skill(skill-creator)"
     ],
-     "ask": [
+    "ask": [
       "Bash(rm:*)"
     ]
+  },
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true
   }
 }

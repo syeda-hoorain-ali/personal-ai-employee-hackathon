@@ -32,6 +32,31 @@
         "@gongrzhe/server-gmail-autoauth-mcp"
       ],
       "env": {}
+    },
+    "xero": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@xeroapi/xero-mcp-server@latest"
+      ],
+      "env": {
+        "XERO_CLIENT_ID": "${XERO_CLIENT_ID}",
+        "XERO_CLIENT_SECRET": "${XERO_CLIENT_SECRET}"
+      }
+    },
+    "twitter-x": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mbelinky/x-mcp-server"
+      ],
+      "env": {
+        "AUTH_TYPE": "oauth2",
+        "OAUTH2_CLIENT_ID": "${X_CLIENT_ID}",
+        "OAUTH2_CLIENT_SECRET": "${X_CLIENT_SECRET}",
+        "OAUTH2_ACCESS_TOKEN": "${X_ACCESS_TOKEN}",
+        "OAUTH2_REFRESH_TOKEN": "${X_REFRESH_TOKEN}"
+      }
     }
   }
 }
