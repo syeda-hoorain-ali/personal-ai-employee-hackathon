@@ -20,6 +20,10 @@ def setup_logging(log_level=logging.INFO, log_dir=None):
     logger = logging.getLogger()
     logger.setLevel(log_level)
 
+    # Configure weekly_audit module logger
+    weekly_audit_logger = logging.getLogger("weekly_audit")
+    weekly_audit_logger.setLevel(log_level)
+
     # Clear existing handlers
     logger.handlers.clear()
 

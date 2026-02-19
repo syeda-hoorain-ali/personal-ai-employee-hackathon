@@ -5,15 +5,20 @@ The Personal AI Employee is an autonomous system that monitors your digital life
 
 ## Prerequisites
 
-### 1. Install Python
+### Required Prerequisites
+
+These must be installed before running `python scripts/setup.py`:
+
+#### 1. Install Python 3.9+
 - Download and install Python 3.9 or higher from [python.org](https://www.python.org/downloads/)
-- Make sure to check "Add Python to PATH" during installation
+- **Important**: Make sure to check "Add Python to PATH" during installation
 - Verify installation by opening a command prompt and typing:
   ```
   python --version
   ```
+  Should show: `Python 3.9.x` or higher
 
-### 2. Install uv
+#### 2. Install uv
 `uv` is a fast Python package installer and resolver that we use for managing dependencies:
 - Visit [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv) for installation instructions
 - Or install via pip: `pip install uv`
@@ -21,6 +26,33 @@ The Personal AI Employee is an autonomous system that monitors your digital life
   ```
   uv --version
   ```
+
+#### 3. Install Node.js and npm
+Node.js is required for MCP servers and plugins:
+- Download and install Node.js LTS from [nodejs.org](https://nodejs.org/)
+- This will automatically install npm and npx
+- Verify installation by opening a command prompt and typing:
+  ```
+  node --version
+  npm --version
+  npx --version
+  ```
+
+#### 4. Install Claude Code CLI
+Claude Code CLI is required for MCP server registration and plugin installation:
+- Install globally via npm:
+  ```
+  npm install -g @anthropic-ai/claude-code
+  ```
+- Or follow the official installation guide at [Claude Code documentation](https://docs.anthropic.com/claude/docs/claude-code)
+- Verify installation by typing:
+  ```
+  claude --version
+  ```
+
+### Optional Prerequisites
+
+These are optional but enable additional features:
 
 ## Setting Up Google Credentials (Optional)
 
@@ -111,13 +143,24 @@ The system uses `AI_Employee_Vault/Company_Handbook.md` to determine how to proc
 - To restart the system, stop it with Ctrl+C and run `python scripts/setup.py` again
 
 ## First-Time Setup Checklist:
-- [ ] Python 3.9+ installed
-- [ ] uv installed
+
+### Required Prerequisites:
+- [ ] Python 3.9+ installed and added to PATH
+- [ ] uv package manager installed
+- [ ] Node.js and npm installed
+- [ ] Claude Code CLI installed (`npm install -g @anthropic-ai/claude-code`)
 - [ ] Project files downloaded/cloned
-- [ ] (Optional) Gmail credentials set up in ~/.gmail-mcp/ directory
-- [ ] (Optional) LinkedIn credentials set up in AI_Employee_Vault/config.json
-- [ ] (Optional) Xero Custom Connection created and credentials added to environment
-- [ ] Run `python scripts/setup.py`
+
+### Optional Prerequisites:
+- [ ] Gmail credentials set up in ~/.gmail-mcp/ directory
+- [ ] LinkedIn credentials set up in AI_Employee_Vault/config.json
+- [ ] Xero Custom Connection created and credentials added to environment
+
+### Setup and Verification:
+- [ ] Run `python scripts/setup.py` as administrator (Windows) or with sudo (Linux/Mac)
+- [ ] Verify Weekly CEO Briefing scheduler created: `schtasks /query /tn WeeklyCEOBriefing` (Windows)
+- [ ] Verify LinkedIn scheduler created: `schtasks /query /tn LinkedInAutoPoster` (Windows)
 - [ ] Verify system is monitoring (check Dashboard.md for activity)
 - [ ] Customize Company_Handbook.md with your preferences
+- [ ] Update AI_Employee_Vault/Business_Goals.md with your business targets
 - [ ] Add test tasks to Needs_Action directory to verify functionality

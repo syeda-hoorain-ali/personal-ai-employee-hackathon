@@ -1,17 +1,15 @@
 {
-  "enabledMcpjsonServers": [
-    "context7",
-    "playwright",
-    "gmail"
-  ],
   "permissions": {
     "allow": [
       "Bash(git remote get-url origin)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7",
-    "playwright"
-  ],
-  "enableAllProjectMcpServers": true
+    "playwright",
+    "gmail",
+    "xero",
+    "twitter-x"
+  ]
 }
