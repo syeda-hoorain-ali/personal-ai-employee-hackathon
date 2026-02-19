@@ -42,6 +42,79 @@ def run_command(cmd, desc):
         return False
 
 
+def setup_weekly_audit_scheduler():
+    """
+    Set up a scheduled task to run the weekly audit every Sunday at 8:00 PM.
+    Only runs if the script is executed with administrator privileges.
+    """
+    # Check if running as administrator
+    if not is_admin():
+        print("[WARNING] Weekly audit scheduler setup requires administrator privileges.")
+        print("         Skipping weekly audit scheduler setup.")
+        print("         Please run this script as an administrator to enable automatic weekly briefings.")
+        return False
+
+    print("[INFO] Setting up Weekly CEO Briefing scheduler...")
+
+    # Check OS type
+    if os.name != 'nt':  # Not Windows
+        print(f"[INFO] For Unix/Linux systems, use cron to schedule weekly audits.")
+        print("         Add this to your crontab (crontab -e):")
+        print("         0 20 * * 0 cd /path/to/project && python -m app.src.app.weekly_audit.audit_orchestrator")
+        return False
+
+    task_name = "WeeklyCEOBriefing"
+    project_root = Path(__file__).parent.parent.resolve()
+    python_exe = sys.executable
+
+    # First, try to delete the existing task if it exists
+    delete_cmd = ['schtasks', '/delete', '/tn', task_name, '/f']
+    try:
+        subprocess.run(delete_cmd, capture_output=True, text=True, check=False)
+        print(f"[INFO] Deleted existing task '{task_name}' if it existed")
+    except Exception as e:
+        print(f"[INFO] No existing task to delete or error deleting: {e}")
+
+    # PowerShell script to create the task
+    ps_script = f'''
+    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '-m src.app.weekly_audit.audit_orchestrator' -WorkingDirectory "{project_root}/app"
+
+    # Trigger: Run every Sunday at 8:00 PM
+    $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At "8:00PM"
+
+    # Settings to ensure task runs reliably
+    $settings = New-ScheduledTaskSettingsSet `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -StartWhenAvailable `
+        -RunOnlyIfNetworkAvailable:$true `
+        -ExecutionTimeLimit (New-TimeSpan -Hours 1) `
+        -MultipleInstances Queue
+
+    # Principal to run whether logged in or not
+    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERNAME" -LogonType ServiceAccount -RunLevel Highest
+
+    # Register the task
+    Register-ScheduledTask -TaskName "{task_name}" -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
+    '''
+
+    try:
+        # Create new task using PowerShell
+        result = subprocess.run(
+            ['powershell', '-Command', ps_script],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(f"[SUCCESS] Successfully created scheduled task '{task_name}'")
+        print(f"[SUCCESS] The task will run weekly audit every Sunday at 8:00 PM")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Error creating scheduled task: {e}")
+        print(f"[ERROR] Error output: {e.stderr}")
+        return False
+
+
 def setup_linkedin_scheduler():
     """
     Set up a scheduled task to run the LinkedIn poster script periodically.
@@ -188,7 +261,8 @@ def main():
             "AI_Employee_Vault/Approved",
             "AI_Employee_Vault/Rejected",
             "AI_Employee_Vault/Logs",
-            "AI_Employee_Vault/Accounting"
+            "AI_Employee_Vault/Accounting",
+            "AI_Employee_Vault/Briefings"
         ]
 
         for dir_path in vault_dirs:
@@ -305,11 +379,21 @@ def main():
                 print(f"[WARNING] Error registering MCP servers: {e}")
 
             # Register Ralph Loop plugin
-            print("[INFO] Installing Ralph Loop plugin...")
+            print("[INFO] Adding Claude plugin marketplace...")
             try:
-                # Run MCP server registration commands
-                cmd = ["claude", "plugin", "install", "--scope", "project", "ralph-loop@claude-plugins-official"]
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                # First, add the official Claude plugins marketplace
+                marketplace_cmd = ["claude", "plugin", "marketplace", "add", "anthropics/claude-plugins-official"]
+                result = subprocess.run(marketplace_cmd, shell=True, capture_output=True, text=True)
+                if result.returncode == 0:
+                    print(f"[SUCCESS] Claude plugin marketplace added")
+                    print(result.stdout)
+                else:
+                    print(f"[WARNING] Failed to add marketplace (may already exist): {result.stderr}")
+
+                # Then install the Ralph Loop plugin from the marketplace
+                print("[INFO] Installing Ralph Loop plugin from marketplace...")
+                plugin_cmd = ["claude", "plugin", "install", "--scope", "project", "ralph-loop@claude-plugins-official"]
+                result = subprocess.run(plugin_cmd, shell=True, capture_output=True, text=True)
                 if result.returncode == 0:
                     print(f"[SUCCESS] Ralph Loop plugin installed")
                     print(result.stdout)
@@ -317,7 +401,7 @@ def main():
                     print(f"[ERROR] Failed to install plugin: {result.stderr}")
 
             except Exception as e:
-                print(f"[WARNING] Error installing plugin: {e}")
+                print(f"[WARNING] Error with plugin setup: {e}")
 
         except ImportError:
             print("[WARNING] Google libraries not available, skipping authentication")
@@ -348,18 +432,74 @@ def main():
     except ImportError:
         print("[INFO] Gmail components not available (this is OK if Google libraries weren't installed)")
 
+    try:
+        from app.weekly_audit.audit_orchestrator import AuditOrchestrator
+        from app.weekly_audit.business_goals_parser import BusinessGoalsParser
+        print("[SUCCESS] Weekly CEO Briefing components available")
+    except ImportError as e:
+        print(f"[WARNING] Weekly CEO Briefing components not available: {e}")
+        print("         This feature may not work correctly")
+
     print()
-    print("[5] Setting up LinkedIn scheduler...")
+    print("[5] Setting up Business Goals for Weekly CEO Briefing...")
+    # Check if Business_Goals.md exists in vault
+    business_goals_path = Path("AI_Employee_Vault/Business_Goals.md")
+    if not business_goals_path.exists():
+        print("[WARNING] Business_Goals.md not found in AI_Employee_Vault")
+        print("         Creating default Business_Goals.md template...")
+
+        # Create default Business_Goals.md
+        default_business_goals = """---
+revenue_target: 10000.00
+current_revenue: 0.00
+key_metrics:
+  - name: "Client response time"
+    target: "< 24 hours"
+    alert_threshold: "> 48 hours"
+  - name: "Invoice payment rate"
+    target: "> 90%"
+    alert_threshold: "< 80%"
+active_projects:
+  - name: "Example Project"
+    deadline: "2026-12-31"
+    budget: 5000
+subscription_rules:
+  inactivity_days: 30
+  cost_increase_threshold: 0.20
+last_updated: "2026-02-19"
+review_frequency: "weekly"
+---
+
+# Business Goals
+
+Update this file with your actual business metrics and targets.
+See the Weekly CEO Briefing documentation for details.
+"""
+        business_goals_path.write_text(default_business_goals, encoding='utf-8')
+        print("[SUCCESS] Created Business_Goals.md template")
+        print("         Please update AI_Employee_Vault/Business_Goals.md with your actual business data")
+    else:
+        print("[SUCCESS] Business_Goals.md found in vault")
+
+    print()
+    print("[6] Setting up LinkedIn scheduler...")
     # Set up LinkedIn auto-poster scheduler
     setup_linkedin_scheduler()
+
+    print()
+    print("[7] Setting up Weekly CEO Briefing scheduler...")
+    # Set up weekly audit scheduler
+    setup_weekly_audit_scheduler()
 
     print()
     print("[SUCCESS] Setup completed successfully!")
     print()
     print("[INFO] Next steps:")
     print("   1. Review the AI_Employee_Vault/Company_Handbook.md for processing rules")
-    print("   2. Place .md files in AI_Employee_Vault/Needs_Action/ to test file processing")
-    print("   3. The system will now start automatically")
+    print("   2. Update AI_Employee_Vault/Business_Goals.md with your business targets")
+    print("   3. Place .md files in AI_Employee_Vault/Needs_Action/ to test file processing")
+    print("   4. Weekly CEO Briefings will be generated every Sunday at 8:00 PM")
+    print("   5. The system will now start automatically")
     print()
 
     # Automatically start the system after setup

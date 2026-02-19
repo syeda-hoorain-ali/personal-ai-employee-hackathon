@@ -142,7 +142,7 @@ class FileProcessor:
             self.logger.info(f"Triggering Claude Code to process: {file_path}")
 
             # Create a prompt that tells Claude Code to use the needs-action-processor skill
-            prompt = f'/ralph-loop:ralph-loop "Use the needs-action-processor skill to process files in the Needs_Action folder. The file {file_path} needs processing according to the Company Handbook rules." --max-iterations 15 --completion-promise "DONE: File processed successfully"'
+            prompt = f'/ralph-loop:ralph-loop "Use the needs-action-processor skill to process files in the Needs_Action folder. The file {file_path} needs processing according to the Company Handbook rules." --max-iterations 15 --completion-promise "<promise>DONE: File processed successfully</promise>"'
 
             # Execute Claude Code with the prompt in non-interactive mode
             result = subprocess.run(
