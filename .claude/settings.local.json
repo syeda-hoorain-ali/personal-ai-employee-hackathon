@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git remote get-url origin)"
+      "Bash(git remote get-url origin)",
+      "Bash(uv run pytest:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

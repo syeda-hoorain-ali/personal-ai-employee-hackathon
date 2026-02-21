@@ -129,6 +129,109 @@ The system uses `AI_Employee_Vault/Company_Handbook.md` to determine how to proc
 - Escalation procedures
 - Approval matrix
 
+## Error Recovery System
+
+The Personal AI Employee includes a comprehensive error recovery system that automatically handles failures and maintains system reliability.
+
+### Features
+
+1. **Centralized Error Logging**
+   - All errors are logged to daily JSON files in `AI_Employee_Vault/Logs/Errors/`
+   - Error dashboard at `AI_Employee_Vault/.system/error_dashboard.json` provides real-time visibility
+   - Errors are categorized by type: TRANSIENT, AUTHENTICATION, LOGIC, DATA, SYSTEM
+
+2. **Automatic Retry with Exponential Backoff**
+   - Transient errors (network timeouts, temporary service unavailability) are automatically retried
+   - Uses exponential backoff: 1s, 2s, 4s delays between retries
+   - Configurable retry attempts (default: 3)
+
+3. **Circuit Breaker Pattern**
+   - Prevents cascading failures by temporarily pausing failing components
+   - Opens after consecutive failures (default: 3)
+   - Automatically recovers after timeout period (default: 60 seconds)
+   - Half-open state for gradual recovery testing
+
+4. **Component Health Monitoring (Watchdog)**
+   - Monitors critical components and automatically restarts crashed processes
+   - Detects crash loops (3 crashes in 5 minutes) and pauses components
+   - Exponential backoff for restart attempts
+   - Configurable restart limits
+
+5. **Operation Queuing**
+   - Queues operations when external services are unavailable
+   - Priority-based processing (1=highest, 3=lowest)
+   - Persistent queue survives system restarts
+   - Automatic processing when services recover
+
+6. **File Quarantine**
+   - Corrupted or problematic files are automatically quarantined
+   - SHA-256 file hashing for integrity verification
+   - Quarantined files can be restored or permanently deleted
+   - Quarantine statistics tracked in dashboard
+
+### Monitoring Error Recovery
+
+1. **View Error Dashboard**
+   ```bash
+   cat AI_Employee_Vault/.system/error_dashboard.json
+   ```
+   Shows:
+   - Error summary by component and type
+   - Paused components (circuit breakers opened)
+   - Quarantined files statistics
+
+2. **View Daily Error Logs**
+   ```bash
+   cat AI_Employee_Vault/Logs/Errors/YYYY-MM-DD.json
+   ```
+   Contains detailed error entries with timestamps, context, and stack traces
+
+3. **Check Quarantined Files**
+   Quarantined files are stored in:
+   ```
+   AI_Employee_Vault/.system/quarantine/
+   AI_Employee_Vault/.system/quarantine/metadata/
+   ```
+
+4. **View Queued Operations**
+   Queued operations are stored in:
+   ```
+   AI_Employee_Vault/.system/queue/pending/
+   AI_Employee_Vault/.system/queue/completed/
+   AI_Employee_Vault/.system/queue/failed/
+   ```
+
+### Error Recovery Configuration
+
+Error recovery components are automatically initialized with sensible defaults. Advanced users can customize:
+
+- **Retry Configuration**: Modify `max_attempts` and `base_delay` in retry decorators
+- **Circuit Breaker**: Adjust `failure_threshold` and `timeout_seconds`
+- **Watchdog**: Configure `max_restart_attempts` and `crash_detection_window_minutes`
+- **Queue**: Set `max_queue_size` and `max_retries` in OperationQueueConfig
+
+### Troubleshooting Error Recovery
+
+1. **Component Paused (Circuit Breaker Open)**
+   - Check error dashboard for failure reason
+   - Wait for timeout period (default: 60 seconds)
+   - Circuit breaker will automatically attempt recovery
+
+2. **Quarantined Files**
+   - Review quarantine metadata to understand why file was quarantined
+   - Fix file issues and restore using FileQuarantine.restore_file()
+   - Or permanently delete using FileQuarantine.delete_quarantined_file()
+
+3. **Queue Buildup**
+   - Check if external services are down
+   - Monitor queue size in error dashboard
+   - Operations will automatically process when services recover
+
+4. **Watchdog Restart Loops**
+   - Component will be paused after 3 crashes in 5 minutes
+   - Check error logs for root cause
+   - Fix underlying issue before manually restarting
+
 ## Troubleshooting
 
 ### Common Issues:
