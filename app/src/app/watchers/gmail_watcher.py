@@ -8,6 +8,15 @@ from google.auth.exceptions import RefreshError
 from datetime import datetime
 from pathlib import Path
 from .base_watcher import BaseWatcher
+from ..error_recovery import (
+    with_retry,
+    ErrorLogger,
+    ErrorType,
+    CircuitBreaker,
+    AuthenticationError,
+    CircuitBreakerOpenError,
+    TransientError,
+)
 
 class GmailWatcher(BaseWatcher):
     def __init__(self, vault_path: str, credentials_path: str):
@@ -16,6 +25,22 @@ class GmailWatcher(BaseWatcher):
         self.creds = self._load_credentials()
         self.service = build('gmail', 'v1', credentials=self.creds)
         self.processed_ids = set()
+
+        # Initialize error logger for retry mechanism
+        logs_dir = Path(vault_path) / "Logs"
+        error_logs_dir = logs_dir / "Errors"
+        dashboard_path = Path(vault_path) / ".system" / "error_dashboard.json"
+        self.error_logger = ErrorLogger(error_logs_dir, dashboard_path)
+
+        # Initialize circuit breaker
+        health_status_path = Path(vault_path) / ".system" / "health_status.json"
+        self.circuit_breaker = CircuitBreaker(
+            component="GmailWatcher",
+            failure_threshold=4,
+            timeout_seconds=60,
+            health_status_path=health_status_path,
+            error_logger=self.error_logger
+        )
 
     def _load_credentials(self):
         """Load Google API credentials from file."""
@@ -58,10 +83,17 @@ class GmailWatcher(BaseWatcher):
                         creds.refresh(Request())
                     except RefreshError as e:
                         self.logger.error(f'Error refreshing credentials: {e}')
-                        raise
+                        # Convert to AuthenticationError for proper handling
+                        raise AuthenticationError(
+                            "gmail_watcher",
+                            f"Failed to refresh Gmail credentials: {e}"
+                        ) from e
                 else:
                     self.logger.warning('Credentials are not valid and cannot be refreshed')
-                    raise ValueError('Invalid credentials that cannot be refreshed')
+                    raise AuthenticationError(
+                        "gmail_watcher",
+                        "Invalid credentials that cannot be refreshed"
+                    )
 
             return creds
         except FileNotFoundError:
@@ -73,11 +105,21 @@ class GmailWatcher(BaseWatcher):
 
     def check_for_updates(self) -> list:
         """Check for new emails in Gmail inbox."""
-        try:
+        @with_retry(
+            max_attempts=3,
+            initial_wait=1.0,
+            exception_types=(TransientError, HttpError),
+            error_logger=self.error_logger,
+            component="GmailWatcher"
+        )
+        def _fetch_messages():
             results = self.service.users().messages().list(
                 userId='me', q='is:unread is:important'
             ).execute()
-            messages = results.get('messages', [])
+            return results.get('messages', [])
+
+        try:
+            messages = _fetch_messages()
 
             # Filter out already processed messages
             new_messages = [m for m in messages if m['id'] not in self.processed_ids]
@@ -86,9 +128,22 @@ class GmailWatcher(BaseWatcher):
             return new_messages
         except HttpError as e:
             self.logger.error(f'HTTP error checking for email updates: {e}')
+            # Log the error but don't crash
+            self.error_logger.log_error(
+                component="GmailWatcher",
+                error_type=ErrorType.TRANSIENT,
+                message=f'HTTP error checking for email updates after retries',
+                error=e
+            )
             return []
         except Exception as e:
             self.logger.error(f'Error checking for email updates: {e}')
+            self.error_logger.log_error(
+                component="GmailWatcher",
+                error_type=ErrorType.SYSTEM,
+                message=f'Unexpected error checking for email updates',
+                error=e
+            )
             return []
 
     def create_action_file(self, item) -> Path:
@@ -174,9 +229,13 @@ message_id: {message['id']}
         self.logger.info(f'Starting {self.__class__.__name__}')
         while True:
             try:
-                items = self.check_for_updates()
+                # Execute check_for_updates through circuit breaker
+                items = self.circuit_breaker.call(self.check_for_updates)
                 for item in items:
                     self.create_action_file(item)
+            except CircuitBreakerOpenError as e:
+                self.logger.warning(f'Circuit breaker is open, skipping check: {e}')
+                # Continue to next iteration after sleep
             except Exception as e:
                 self.logger.error(f'Error in Gmail watcher: {e}')
             # Sleep for the check interval

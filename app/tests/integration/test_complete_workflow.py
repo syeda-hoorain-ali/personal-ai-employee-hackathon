@@ -175,7 +175,7 @@ This is a payment request that should require approval based on amount.
             assert file_path.exists(), f"Failed to create: {filename}"
 
         # Process all files using the batch method
-        results = self.processor.process_Needs_Action_directory()
+        results = self.processor.process_needs_action_directory()
 
         # Verify that files were processed
         assert results['processed_count'] >= 0, "No files were processed"
