@@ -74,9 +74,12 @@ class Watchdog:
         # Component registry
         self.components: Dict[str, ComponentConfig] = {}
         self.component_pids: Dict[str, int] = {}
+        self.component_create_times: Dict[str, float] = {}  # Track process creation time to prevent PID reuse issues
         self.component_status: Dict[str, ComponentHealthStatus] = {}
         self.restart_counts: Dict[str, int] = {}
         self.crash_history: Dict[str, List[str]] = {}  # component -> list of crash timestamps
+        self.consecutive_healthy_checks: Dict[str, int] = {}  # Track consecutive successful health checks
+        self.scheduled_restarts: Dict[str, datetime] = {}  # Track scheduled restart times (non-blocking)
 
         # Operation queue registry
         self.operation_queues: Dict[str, OperationQueue] = {}
@@ -98,6 +101,7 @@ class Watchdog:
         self.components[config.name] = config
         self.restart_counts[config.name] = 0
         self.crash_history[config.name] = []
+        self.consecutive_healthy_checks[config.name] = 0
 
         logger.info(f"Registered component: {config.name}")
 
@@ -120,8 +124,52 @@ class Watchdog:
         self.operation_handlers[queue_name] = handlers
         logger.info(f"Registered operation queue: {queue_name} with {len(handlers)} handlers")
 
+    def _process_scheduled_restarts(self):
+        """Process scheduled component restarts (non-blocking)."""
+        current_time = datetime.now(UTC)
+        components_to_restart = []
+
+        # Find components ready for restart
+        for name, restart_time in list(self.scheduled_restarts.items()):
+            if current_time >= restart_time:
+                components_to_restart.append(name)
+                del self.scheduled_restarts[name]
+
+        # Execute scheduled restarts
+        for name in components_to_restart:
+            logger.info(f"Executing scheduled restart for {name}")
+            success = self._start_component(name)
+
+            if success:
+                self.error_logger.log_error(
+                    component=name,
+                    error_type=ErrorType.SYSTEM,
+                    message=f"Component restarted (attempt {self.restart_counts[name]}/{self.components[name].max_restart_attempts})",
+                    context={
+                        "restart_count": self.restart_counts[name],
+                        "max_attempts": self.components[name].max_restart_attempts
+                    }
+                )
+            else:
+                logger.error(f"Failed to restart component {name}")
+                self.error_logger.log_error(
+                    component=name,
+                    error_type=ErrorType.SYSTEM,
+                    message=f"Failed to restart component",
+                    context={
+                        "restart_count": self.restart_counts[name],
+                        "max_attempts": self.components[name].max_restart_attempts
+                    }
+                )
+
     def _process_operation_queues(self):
-        """Process all registered operation queues."""
+        """
+        Process all registered operation queues.
+
+        Note: Queue processing is synchronous and may block health checks if queues
+        are large or handlers perform slow operations. For production systems with
+        high-volume queues, consider async processing or dedicated worker threads.
+        """
         for queue_name, queue in self.operation_queues.items():
             try:
                 handlers = self.operation_handlers.get(queue_name, {})
@@ -172,6 +220,7 @@ class Watchdog:
         # Main monitoring loop
         while self.running:
             try:
+                self._process_scheduled_restarts()
                 self._check_all_components()
                 self._process_operation_queues()
                 self._save_state()
@@ -208,6 +257,15 @@ class Watchdog:
 
             if pid:
                 self.component_pids[name] = pid
+
+                # Track process creation time to prevent PID reuse issues
+                try:
+                    process = psutil.Process(pid)
+                    self.component_create_times[name] = process.create_time()
+                except Exception as e:
+                    logger.warning(f"Could not get creation time for PID {pid}: {e}")
+                    self.component_create_times[name] = time.time()
+
                 self.component_status[name] = ComponentHealthStatus(
                     component=name,
                     status=ComponentStatus.STARTING,
@@ -261,22 +319,32 @@ class Watchdog:
             return False
 
         # Record crash
+        current_time = datetime.now(UTC)
         self.crash_history[name].append(
-            datetime.now(UTC).isoformat().replace('+00:00', 'Z')
+            current_time.isoformat().replace('+00:00', 'Z')
         )
+
+        # Prune old crash timestamps outside the detection window
+        window_start = current_time - timedelta(minutes=config.crash_detection_window_minutes)
+        self.crash_history[name] = [
+            ts for ts in self.crash_history[name]
+            if datetime.fromisoformat(ts.replace('Z', '+00:00')) > window_start
+        ]
 
         # Stop existing process if running
         if name in self.component_pids:
             self._stop_component(name)
 
-        # Wait for backoff period
+        # Schedule restart with backoff period (non-blocking)
         backoff = config.restart_backoff_seconds * (2 ** self.restart_counts[name])
-        logger.info(f"Waiting {backoff}s before restarting {name}")
-        time.sleep(backoff)
+        restart_time = datetime.now(UTC) + timedelta(seconds=backoff)
+        self.scheduled_restarts[name] = restart_time
+        logger.info(f"Scheduled restart for {name} in {backoff}s at {restart_time.isoformat()}")
 
-        # Restart component
+        # Increment restart count
         self.restart_counts[name] += 1
-        success = self._start_component(name)
+
+        return True  # Restart scheduled successfully
 
         if success:
             self.error_logger.log_error(
@@ -379,8 +447,12 @@ class Watchdog:
                     process_id=self.component_pids.get(name),
                     health_check_last_run=datetime.now(UTC).isoformat().replace('+00:00', 'Z')
                 )
-                # Reset restart count on successful health check
-                self.restart_counts[name] = 0
+                # Increment consecutive healthy checks
+                self.consecutive_healthy_checks[name] = self.consecutive_healthy_checks.get(name, 0) + 1
+
+                # Reset restart count only after 3 consecutive healthy checks to prevent flapping
+                if self.consecutive_healthy_checks[name] >= 3:
+                    self.restart_counts[name] = 0
             elif is_running and not is_healthy:
                 # Process running but unhealthy
                 logger.warning(f"Component {name} is unhealthy")
@@ -402,15 +474,33 @@ class Watchdog:
                 self.restart_component(name)
 
     def _is_process_running(self, name: str) -> bool:
-        """Check if a component's process is running."""
+        """Check if a component's process is running and matches expected creation time."""
         if name not in self.component_pids:
             return False
 
         pid = self.component_pids[name]
+        expected_create_time = self.component_create_times.get(name)
 
         try:
             process = psutil.Process(pid)
-            return process.is_running()
+
+            # Verify process is running
+            if not process.is_running():
+                return False
+
+            # Verify process creation time matches to prevent PID reuse issues
+            if expected_create_time is not None:
+                actual_create_time = process.create_time()
+                # Allow small tolerance for timing differences (1 second)
+                if abs(actual_create_time - expected_create_time) > 1.0:
+                    logger.warning(
+                        f"PID {pid} for {name} has different creation time "
+                        f"(expected: {expected_create_time}, actual: {actual_create_time}). "
+                        f"PID may have been reused."
+                    )
+                    return False
+
+            return True
         except psutil.NoSuchProcess:
             return False
         except Exception as e:

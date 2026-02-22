@@ -335,8 +335,15 @@ class TestDashboardUpdate:
         with open(dashboard_path, 'r') as f:
             dashboard = json.load(f)
 
-        assert dashboard["errors_by_component"]["Component1"] == 2
-        assert dashboard["errors_by_component"]["Component2"] == 1
+        # Verify nested structure with by_type
+        assert "Component1" in dashboard["errors_by_component"]
+        assert "by_type" in dashboard["errors_by_component"]["Component1"]
+        assert dashboard["errors_by_component"]["Component1"]["by_type"]["TRANSIENT"] == 1
+        assert dashboard["errors_by_component"]["Component1"]["by_type"]["DATA"] == 1
+
+        assert "Component2" in dashboard["errors_by_component"]
+        assert "by_type" in dashboard["errors_by_component"]["Component2"]
+        assert dashboard["errors_by_component"]["Component2"]["by_type"]["TRANSIENT"] == 1
 
     def test_dashboard_recent_errors_limit(self, error_logger, temp_dir):
         """Test that dashboard keeps only last 50 recent errors."""

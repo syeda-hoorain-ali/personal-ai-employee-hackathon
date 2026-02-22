@@ -236,8 +236,9 @@ class TestFileLock:
             # Lock file should exist during lock
             assert lock_file.exists()
 
-        # Lock file should be cleaned up after
-        assert not lock_file.exists()
+        # Lock file persists after release (managed by filelock library)
+        # This is intentional per PR suggestion S002 to prevent race conditions
+        assert lock_file.exists()
 
     @pytest.mark.skip(reason="Flaky concurrency test - file locking works but timing is unreliable on Windows")
     def test_file_lock_prevents_concurrent_access(self, temp_dir):
@@ -270,7 +271,7 @@ class TestFileLock:
         assert any("error" in str(r) for r in results)
 
     def test_file_lock_cleanup_on_exception(self, temp_dir):
-        """Test that lock file is cleaned up even on exception."""
+        """Test that lock is released even on exception."""
         test_file = temp_dir / "test.json"
         lock_file = Path(str(test_file) + ".lock")
 
@@ -280,8 +281,9 @@ class TestFileLock:
         except ValueError:
             pass
 
-        # Lock file should still be cleaned up
-        assert not lock_file.exists()
+        # Lock file persists but lock is released (managed by filelock library)
+        # This is intentional per PR suggestion S002 to prevent race conditions
+        assert lock_file.exists()
 
 
 class TestAtomicWrite:

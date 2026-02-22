@@ -6,6 +6,7 @@ to quarantine, tracking metadata, and providing management capabilities.
 """
 
 import shutil
+import uuid
 from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -81,8 +82,8 @@ class FileQuarantine:
         if not file_path.exists():
             raise QuarantineError(f"File not found: {file_path}")
 
-        # Generate quarantine ID
-        quarantine_id = f"{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}_{file_path.name}"
+        # Generate quarantine ID with UUID to prevent collisions
+        quarantine_id = f"{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}_{file_path.name}"
 
         # Create quarantined file record
         quarantined_file = QuarantinedFile(

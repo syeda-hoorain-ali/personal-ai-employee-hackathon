@@ -109,16 +109,9 @@ def file_lock(file_path: Path, timeout: int = 5):
     lock_path = Path(str(file_path) + ".lock")
     lock = FileLock(str(lock_path), timeout=timeout)
 
-    try:
-        with lock:
-            yield lock
-    finally:
-        # Cleanup lock file if it exists
-        if lock_path.exists():
-            try:
-                lock_path.unlink()
-            except Exception:
-                pass  # Ignore cleanup errors
+    # Let filelock library manage the lock file lifecycle
+    with lock:
+        yield lock
 
 
 def atomic_write(file_path: Path, content: str) -> None:
@@ -197,6 +190,10 @@ def write_json_file(file_path: Path, data: Any, indent: int = 2) -> None:
 def append_to_json_array(file_path: Path, item: Dict[str, Any]) -> None:
     """
     Append item to JSON array file with file locking.
+
+    Note: This function reads the entire file, appends an item, and writes it back,
+    resulting in O(N) complexity per append. For high-volume logging scenarios,
+    consider using newline-delimited JSON (NDJSON) format or a database.
 
     Args:
         file_path: Path to JSON array file

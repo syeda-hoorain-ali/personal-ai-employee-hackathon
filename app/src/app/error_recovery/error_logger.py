@@ -166,9 +166,17 @@ class ErrorLogger:
             errors_by_type[error_type_key] = errors_by_type.get(error_type_key, 0) + 1
             dashboard["errors_by_type"] = errors_by_type
 
-            # Update errors by component
+            # Update errors by component with nested by_type structure
             errors_by_component = dashboard.get("errors_by_component", {})
-            errors_by_component[entry.component] = errors_by_component.get(entry.component, 0) + 1
+            if entry.component not in errors_by_component:
+                errors_by_component[entry.component] = {"by_type": {}}
+
+            # Update component's error count by type
+            component_data = errors_by_component[entry.component]
+            by_type = component_data.get("by_type", {})
+            by_type[error_type_key] = by_type.get(error_type_key, 0) + 1
+            component_data["by_type"] = by_type
+
             dashboard["errors_by_component"] = errors_by_component
 
             # Add to recent errors (keep last 50)
