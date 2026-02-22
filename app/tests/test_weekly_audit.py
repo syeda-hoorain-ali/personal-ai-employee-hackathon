@@ -4,7 +4,7 @@ Run with: python test_weekly_audit.py
 """
 
 import sys
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding='utf-8')  # type: ignore[attr-defined]
 
 import tempfile
 import csv
@@ -61,7 +61,7 @@ def test_entities():
             actual_duration=timedelta(hours=3),
             priority='high',
             project='Test Project',
-            file_path=None
+            file_path=Path('test_task.md')
         )
         assert task.name == 'Test Task'
         print(f'  [PASS] CompletedTask: {task.name}')
@@ -71,7 +71,7 @@ def test_entities():
             amount=Decimal('-49.99'),
             description='Netflix Subscription',
             category='Entertainment',
-            source_file=None
+            source_file=Path('transactions.csv')
         )
         assert transaction.amount == Decimal('-49.99')
         print(f'  [PASS] Transaction: {transaction.description}')
@@ -197,7 +197,8 @@ def test_subscription_detector():
         transactions = analyzer.parse_csv(start_date, end_date)
 
         detector = SubscriptionDetector()
-        subscriptions = detector.detect_subscriptions(transactions, inactivity_days=30, cost_increase_threshold=0.20)
+        subscriptions = detector.detect_subscriptions(transactions)
+        flagged_subscriptions = detector.flag_subscriptions(subscriptions, no_activity_days=30, cost_increase_threshold=0.20)
 
         print(f'  [PASS] Detected {len(subscriptions)} subscriptions')
         for sub in subscriptions:

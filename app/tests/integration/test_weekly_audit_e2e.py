@@ -11,11 +11,11 @@ import csv
 
 import pytest
 
-from app.src.app.weekly_audit.audit_orchestrator import AuditOrchestrator
-from app.src.app.weekly_audit.business_goals_parser import BusinessGoalsParser
-from app.src.app.weekly_audit.task_analyzer import TaskAnalyzer
-from app.src.app.weekly_audit.transaction_analyzer import TransactionAnalyzer
-from app.src.app.weekly_audit.subscription_detector import SubscriptionDetector
+from app.weekly_audit.audit_orchestrator import AuditOrchestrator
+from app.weekly_audit.business_goals_parser import BusinessGoalsParser
+from app.weekly_audit.task_analyzer import TaskAnalyzer
+from app.weekly_audit.transaction_analyzer import TransactionAnalyzer
+from app.weekly_audit.subscription_detector import SubscriptionDetector
 
 
 class TestWeeklyAuditE2E:
@@ -101,8 +101,8 @@ This is a completed task.
 
     def test_business_goals_parser(self, temp_vault):
         """Test that BusinessGoalsParser can read the goals file."""
-        parser = BusinessGoalsParser()
-        goals = parser.parse(temp_vault / "Business_Goals.md")
+        parser = BusinessGoalsParser(temp_vault / "Business_Goals.md")
+        goals = parser.parse()
 
         assert goals.revenue_target == 10000.00
         assert goals.current_revenue == 3500.00
@@ -112,8 +112,8 @@ This is a completed task.
 
     def test_task_analyzer(self, temp_vault):
         """Test that TaskAnalyzer can scan completed tasks."""
-        analyzer = TaskAnalyzer()
-        tasks = analyzer.analyze_completed_tasks(temp_vault / "Done", days=7)
+        analyzer = TaskAnalyzer(temp_vault / "Done")
+        tasks = analyzer.analyze_completed_tasks(days=7)
 
         assert len(tasks) >= 2
         assert any('task1' in task.name.lower() for task in tasks)
@@ -121,18 +121,37 @@ This is a completed task.
 
     def test_transaction_analyzer(self, temp_vault):
         """Test that TransactionAnalyzer can parse CSV files."""
-        analyzer = TransactionAnalyzer()
-        summary = analyzer.analyze_transactions(temp_vault / "Accounting", days=30)
+        from datetime import date, timedelta
+
+        analyzer = TransactionAnalyzer(temp_vault / "Accounting")
+
+        # Calculate date range for last 30 days
+        end_date = date.today()
+        start_date = end_date - timedelta(days=30)
+
+        # Parse transactions
+        transactions = analyzer.parse_csv(start_date, end_date)
+
+        # Calculate summary
+        summary = analyzer.calculate_summary(transactions, start_date, end_date)
 
         assert summary.total_revenue > 0
         assert summary.total_expenses > 0
         assert summary.net_income == summary.total_revenue - summary.total_expenses
-        assert summary.transaction_count >= 7
+        assert summary.transaction_count >= 6  # Test data has 6 transactions
 
     def test_subscription_detector(self, temp_vault):
         """Test that SubscriptionDetector can identify recurring subscriptions."""
-        analyzer = TransactionAnalyzer()
-        transactions = analyzer.parse_csv(temp_vault / "Accounting" / "february-2026.csv")
+        from datetime import date, timedelta
+
+        analyzer = TransactionAnalyzer(temp_vault / "Accounting")
+
+        # Calculate date range for last 60 days to capture recurring transactions
+        end_date = date.today()
+        start_date = end_date - timedelta(days=60)
+
+        # Parse transactions
+        transactions = analyzer.parse_csv(start_date, end_date)
 
         detector = SubscriptionDetector()
         subscriptions = detector.detect_subscriptions(transactions)
@@ -143,6 +162,8 @@ This is a completed task.
 
     def test_full_orchestrator_workflow(self, temp_vault):
         """Test the complete audit orchestrator workflow."""
+        from datetime import date, timedelta
+
         orchestrator = AuditOrchestrator(temp_vault)
 
         # Note: This will attempt to invoke Claude skill, which may fail
@@ -150,9 +171,15 @@ This is a completed task.
         # doesn't crash and can collect/prepare data.
         try:
             # Test data collection without Claude invocation
-            goals = BusinessGoalsParser().parse(temp_vault / "Business_Goals.md")
-            tasks = TaskAnalyzer().analyze_completed_tasks(temp_vault / "Done", days=7)
-            summary = TransactionAnalyzer().analyze_transactions(temp_vault / "Accounting", days=30)
+            goals = BusinessGoalsParser(temp_vault / "Business_Goals.md").parse()
+            tasks = TaskAnalyzer(temp_vault / "Done").analyze_completed_tasks(days=7)
+
+            # Calculate date range for transactions
+            end_date = date.today()
+            start_date = end_date - timedelta(days=30)
+            analyzer = TransactionAnalyzer(temp_vault / "Accounting")
+            transactions = analyzer.parse_csv(start_date, end_date)
+            summary = analyzer.calculate_summary(transactions, start_date, end_date)
 
             assert goals is not None
             assert len(tasks) >= 2
@@ -170,16 +197,16 @@ This is a completed task.
 def test_module_imports():
     """Test that all weekly_audit modules can be imported."""
     try:
-        from app.src.app.weekly_audit import entities
-        from app.src.app.weekly_audit import audit_orchestrator
-        from app.src.app.weekly_audit import business_goals_parser
-        from app.src.app.weekly_audit import task_analyzer
-        from app.src.app.weekly_audit import transaction_analyzer
-        from app.src.app.weekly_audit import subscription_detector
-        from app.src.app.weekly_audit import briefing_generator
-        from app.src.app.weekly_audit.schedulers import base_scheduler
-        from app.src.app.weekly_audit.schedulers import windows_scheduler
-        from app.src.app.weekly_audit.schedulers import unix_scheduler
+        from app.weekly_audit import entities
+        from app.weekly_audit import audit_orchestrator
+        from app.weekly_audit import business_goals_parser
+        from app.weekly_audit import task_analyzer
+        from app.weekly_audit import transaction_analyzer
+        from app.weekly_audit import subscription_detector
+        from app.weekly_audit import briefing_generator
+        from app.weekly_audit.schedulers import base_scheduler
+        from app.weekly_audit.schedulers import windows_scheduler
+        from app.weekly_audit.schedulers import unix_scheduler
 
         print("✓ All modules imported successfully")
 

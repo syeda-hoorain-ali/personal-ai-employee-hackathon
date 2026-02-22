@@ -8,21 +8,31 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "filelock>=3.13.0",
     "google-api-python-client>=2.188.0",
     "google-auth>=2.47.0",
     "google-auth-httplib2>=0.3.0",
     "google-auth-oauthlib>=1.2.2",
     "mcp>=1.25.0",
     "mypy>=1.19.1",
+    "psutil>=5.9.0",
     "pytest>=9.0.2",
     "python-dateutil",
     "pyyaml",
     "schedule",
+    "tenacity>=8.2.0",
     "watchdog>=6.0.0",
 ]
 
 [project.scripts]
 app = "app:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
 
 [build-system]
 requires = ["uv_build>=0.9.25,<0.10.0"]

@@ -4,14 +4,21 @@ This module automatically invokes Claude Code when files in the Needs_Action fol
 """
 
 import os
+import re
+import logging
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from .vault_reader import VaultReader
 from .vault_writer import VaultWriter
-import re
-import logging
-import subprocess
-import time
+from .error_recovery import (
+    ErrorLogger,
+    CircuitBreaker,
+    FileQuarantine,
+    ErrorType,
+    CircuitBreakerOpenError,
+    QuarantineError
+)
 
 
 class FileProcessor:
@@ -24,6 +31,29 @@ class FileProcessor:
         self.reader = VaultReader(vault_path)
         self.writer = VaultWriter(vault_path)
         self.logger = logging.getLogger(self.__class__.__name__)
+
+        # Initialize error logger
+        logs_dir = self.vault_path / "Logs"
+        error_logs_dir = logs_dir / "Errors"
+        dashboard_path = self.vault_path / ".system" / "error_dashboard.json"
+        self.error_logger = ErrorLogger(error_logs_dir, dashboard_path)
+
+        # Initialize circuit breaker
+        health_status_path = self.vault_path / ".system" / "health_status.json"
+        self.circuit_breaker = CircuitBreaker(
+            component="FileProcessor",
+            failure_threshold=4,
+            timeout_seconds=60,
+            health_status_path=health_status_path,
+            error_logger=self.error_logger
+        )
+
+        # Initialize file quarantine
+        quarantine_dir = self.vault_path / ".system" / "quarantine"
+        self.file_quarantine = FileQuarantine(
+            quarantine_dir=quarantine_dir,
+            error_logger=self.error_logger
+        )
 
         # Load company handbook rules
         self.handbook_rules = self._load_handbook_rules()
@@ -43,6 +73,13 @@ class FileProcessor:
 
         if not handbook_content:
             self.logger.warning("Could not load Company_Handbook.md, using default rules")
+            # Log as DATA error since handbook file is missing/corrupted
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.DATA,
+                message="Could not load Company_Handbook.md, using default rules",
+                context={"handbook_path": "Company_Handbook.md"}
+            )
             return self._get_default_rules()
 
         # Extract sections from handbook
@@ -115,17 +152,124 @@ class FileProcessor:
         Returns:
             Tuple of (success: bool, message: str)
         """
-        content = self.reader.read_file(file_path)
-        if not content:
-            return False, f"Could not read file: {file_path}"
+        try:
+            content = self.reader.read_file(file_path)
+            if not content:
+                # Quarantine corrupted/unreadable files
+                try:
+                    file_full_path = self.vault_path / file_path
+                    if file_full_path.exists():
+                        quarantine_id = self.file_quarantine.quarantine_file(
+                            file_path=file_full_path,
+                            reason="File could not be read - possibly corrupted or invalid encoding",
+                            error_type=ErrorType.DATA,
+                            component="FileProcessor",
+                            additional_metadata={"rules_context": rules_context}
+                        )
+                        self.logger.warning(f"Quarantined unreadable file: {file_path} (ID: {quarantine_id})")
+                        return False, f"File quarantined due to read error: {quarantine_id}"
+                except QuarantineError as qe:
+                    self.logger.error(f"Failed to quarantine corrupted file {file_path}: {qe}")
 
-        # Indicate to Claude Code that this file needs processing
-        success = self._trigger_claude_processing(file_path)
+                # Log as DATA error since file is missing/corrupted
+                self.error_logger.log_error(
+                    component="FileProcessor",
+                    error_type=ErrorType.DATA,
+                    message=f"Could not read file: {file_path}",
+                    context={"file_path": file_path, "rules_context": rules_context}
+                )
+                return False, f"Could not read file: {file_path}"
 
-        if success:
-            return True, f"Claude Code notified to process {file_path}"
-        else:
-            return False, f"Failed to notify Claude Code to process: {file_path}"
+            # Validate file content (basic checks for corruption)
+            if not self._validate_file_content(content, file_path):
+                # Quarantine invalid files
+                try:
+                    file_full_path = self.vault_path / file_path
+                    quarantine_id = self.file_quarantine.quarantine_file(
+                        file_path=file_full_path,
+                        reason="File content validation failed - malformed or corrupted data",
+                        error_type=ErrorType.DATA,
+                        component="FileProcessor",
+                        additional_metadata={"rules_context": rules_context, "content_length": len(content)}
+                    )
+                    self.logger.warning(f"Quarantined invalid file: {file_path} (ID: {quarantine_id})")
+                    return False, f"File quarantined due to validation failure: {quarantine_id}"
+                except QuarantineError as qe:
+                    self.logger.error(f"Failed to quarantine invalid file {file_path}: {qe}")
+                    return False, f"File validation failed and quarantine failed: {file_path}"
+
+            # Execute through circuit breaker to prevent cascading failures
+            success = self.circuit_breaker.call(self._trigger_claude_processing, file_path)
+
+            if success:
+                return True, f"Claude Code notified to process {file_path}"
+            else:
+                return False, f"Failed to notify Claude Code to process: {file_path}"
+        except CircuitBreakerOpenError as e:
+            self.logger.warning(f"Circuit breaker is open, cannot process file: {e}")
+            return False, f"Circuit breaker is open, file processing paused: {file_path}"
+        except Exception as e:
+            # Catch any unexpected errors and quarantine the file
+            self.logger.error(f"Unexpected error processing file {file_path}: {e}")
+            try:
+                file_full_path = self.vault_path / file_path
+                if file_full_path.exists():
+                    quarantine_id = self.file_quarantine.quarantine_file(
+                        file_path=file_full_path,
+                        reason=f"Unexpected error during processing: {str(e)[:200]}",
+                        error_type=ErrorType.SYSTEM,
+                        component="FileProcessor",
+                        additional_metadata={"rules_context": rules_context, "error_type": type(e).__name__}
+                    )
+                    self.logger.warning(f"Quarantined problematic file: {file_path} (ID: {quarantine_id})")
+                    return False, f"File quarantined due to processing error: {quarantine_id}"
+            except QuarantineError:
+                pass
+
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.SYSTEM,
+                message=f"Unexpected error processing file",
+                error=e,
+                context={"file_path": file_path, "rules_context": rules_context}
+            )
+            return False, f"Error processing file: {file_path}"
+
+    def _validate_file_content(self, content: str, file_path: str) -> bool:
+        """
+        Validate file content for basic corruption checks.
+
+        Args:
+            content: File content to validate
+            file_path: Path to the file being validated
+
+        Returns:
+            True if valid, False if corrupted/invalid
+        """
+        try:
+            # Check for null bytes (indicates binary corruption in text files)
+            if '\x00' in content:
+                self.logger.warning(f"File contains null bytes: {file_path}")
+                return False
+
+            # Check for excessive control characters (might indicate corruption)
+            control_char_count = sum(1 for c in content if ord(c) < 32 and c not in '\n\r\t')
+            if len(content) > 0 and control_char_count / len(content) > 0.1:
+                self.logger.warning(f"File contains excessive control characters: {file_path}")
+                return False
+
+            # For markdown files, check for basic structure
+            if file_path.endswith('.md'):
+                # Very basic check - markdown should have some readable text
+                if len(content.strip()) == 0:
+                    self.logger.warning(f"Markdown file is empty: {file_path}")
+                    return False
+
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Error validating file content for {file_path}: {e}")
+            return False
 
     def _trigger_claude_processing(self, file_path: str) -> bool:
         """
@@ -148,7 +292,7 @@ class FileProcessor:
             result = subprocess.run(
                 [
                     'ccr', 'code',
-                    '--allowedTools', 'Bash,Read,Write(./AI_Employee_Vault*),Edit(./AI_Employee_Vault*),Skill,mcp__gmail__*',
+                    '--allowedTools', 'Bash,Read,Write(./AI_Employee_Vault*),Edit(./AI_Employee_Vault*),Skill,mcp__gmail__*,mcp__playwright__*,mcp__xero__*,mcp__twitter-x__*',
                     '--disallowedTools', 'Bash(rm:*),mcp__gmail__delete_email,mcp__gmail__batch_delete_emails',
                     '--no-session-persistence',
                     '-p', prompt
@@ -166,16 +310,52 @@ class FileProcessor:
                 return True
             else:
                 self.logger.error(f"Failed to trigger Claude Code: {result.stderr}")
+                # Log as LOGIC error since Claude Code invocation failed
+                self.error_logger.log_error(
+                    component="FileProcessor",
+                    error_type=ErrorType.LOGIC,
+                    message=f"Claude Code invocation failed with non-zero return code",
+                    error_code=str(result.returncode),
+                    context={
+                        "file_path": file_path,
+                        "stderr": result.stderr[:500] if result.stderr else None,
+                        "stdout": result.stdout[:500] if result.stdout else None
+                    }
+                )
                 return False
 
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as e:
             self.logger.error(f"Claude Code command timed out for: {file_path}")
+            # Log as TRANSIENT error since timeout might be temporary
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.TRANSIENT,
+                message=f"Claude Code command timed out after 600 seconds",
+                error=e,
+                context={"file_path": file_path, "timeout_seconds": 600}
+            )
             return False
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             self.logger.warning("ccr command not found, unable to trigger Claude Code. Manual processing required.")
+            # Log as SYSTEM error since ccr command is missing
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.SYSTEM,
+                message="ccr command not found - Claude Code CLI not installed or not in PATH",
+                error=e,
+                context={"file_path": file_path}
+            )
             return False
         except Exception as e:
             self.logger.error(f"Error triggering Claude Code for {file_path}: {e}")
+            # Log as SYSTEM error for unexpected exceptions
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.SYSTEM,
+                message=f"Unexpected error triggering Claude Code",
+                error=e,
+                context={"file_path": file_path}
+            )
             return False
 
     def _mark_file_as_queued(self, file_path: str) -> bool:
@@ -192,6 +372,13 @@ class FileProcessor:
             # Read the original file
             content = self.reader.read_file(file_path)
             if not content:
+                # Log as DATA error since file is missing/corrupted
+                self.error_logger.log_error(
+                    component="FileProcessor",
+                    error_type=ErrorType.DATA,
+                    message=f"Could not read file to mark as queued: {file_path}",
+                    context={"file_path": file_path, "operation": "mark_as_queued"}
+                )
                 return False
 
             # Add a processing status indicator to the file
@@ -206,6 +393,14 @@ class FileProcessor:
             return True
         except Exception as e:
             self.logger.error(f"Error marking file as queued {file_path}: {e}")
+            # Log as SYSTEM error for file write failures
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.SYSTEM,
+                message=f"Failed to mark file as queued",
+                error=e,
+                context={"file_path": file_path, "operation": "mark_as_queued"}
+            )
             return False
 
     def _apply_rules(self, content: str, file_path: str, context: str) -> Tuple[str, List[str]]:
@@ -329,31 +524,48 @@ class FileProcessor:
             "approval_needed": [],
         }
 
-        # Get all files in Needs_Action directory, excluding metadata files
-        needs_action_files = [f for f in self.reader.get_file_list("Needs_Action", ".md") if not f.endswith('_meta.md')]
+        try:
+            # Get all files in Needs_Action directory, excluding metadata files
+            needs_action_files = [f for f in self.reader.get_file_list("Needs_Action", ".md") if not f.endswith('_meta.md')]
 
-        for filename in needs_action_files:
-            file_path = f"Needs_Action/{filename}"
+            for filename in needs_action_files:
+                file_path = f"Needs_Action/{filename}"
 
-            # Check if this file has already been processed to avoid repetitive logging
-            if file_path in self.processed_files:
-                continue
+                # Check if this file has already been processed to avoid repetitive logging
+                if file_path in self.processed_files:
+                    continue
 
-            success, message = self.process_file(file_path)
+                success, message = self.process_file(file_path)
 
-            if success:
-                results["successful"].append(filename)
-                results["processed_count"] += 1
-                # Mark this file as processed to avoid re-processing
-                self.processed_files.add(file_path)
+                if success:
+                    results["successful"].append(filename)
+                    results["processed_count"] += 1
+                    # Mark this file as processed to avoid re-processing
+                    self.processed_files.add(file_path)
 
-                # In the Claude-integrated version, approval decisions would be made by Claude
-                if "Claude Code notified" in message:
-                    # We'll assume Claude will handle approval decisions
-                    pass
-            else:
-                results["failed"].append(filename)
-                self.logger.error(f"Failed to process {filename}: {message}")
+                    # In the Claude-integrated version, approval decisions would be made by Claude
+                    if "Claude Code notified" in message:
+                        # We'll assume Claude will handle approval decisions
+                        pass
+                else:
+                    results["failed"].append(filename)
+                    self.logger.error(f"Failed to process {filename}: {message}")
+                    # Error already logged in process_file(), no need to duplicate
+
+        except Exception as e:
+            self.logger.error(f"Error processing Needs_Action directory: {e}")
+            # Log as SYSTEM error for unexpected directory processing failures
+            self.error_logger.log_error(
+                component="FileProcessor",
+                error_type=ErrorType.SYSTEM,
+                message="Failed to process Needs_Action directory",
+                error=e,
+                context={
+                    "processed_count": results["processed_count"],
+                    "successful_count": len(results["successful"]),
+                    "failed_count": len(results["failed"])
+                }
+            )
 
         return results
 

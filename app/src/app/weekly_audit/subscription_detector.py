@@ -214,8 +214,10 @@ class SubscriptionDetector:
         subscription = Subscription(
             name=service_name,
             amount=avg_amount,
-            last_charge=last_transaction.date,
-            frequency_days=int(avg_frequency),
+            last_seen_date=last_transaction.date,
+            frequency=frequency,
+            pattern_matched=pattern_key,
+            transaction_count=len(sorted_transactions),
             flags=[],
         )
 
@@ -251,7 +253,7 @@ class SubscriptionDetector:
             flags = []
 
             # Check for no activity
-            days_since_last_charge = (current_date - subscription.last_charge).days
+            days_since_last_charge = (current_date - subscription.last_seen_date).days
             if days_since_last_charge >= no_activity_days:
                 flags.append("no_activity_30_days")
                 logger.debug(
@@ -267,8 +269,10 @@ class SubscriptionDetector:
             flagged_subscription = Subscription(
                 name=subscription.name,
                 amount=subscription.amount,
-                last_charge=subscription.last_charge,
-                frequency_days=subscription.frequency_days,
+                last_seen_date=subscription.last_seen_date,
+                frequency=subscription.frequency,
+                pattern_matched=subscription.pattern_matched,
+                transaction_count=subscription.transaction_count,
                 flags=flags,
             )
 
