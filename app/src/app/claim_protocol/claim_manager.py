@@ -272,10 +272,14 @@ class ClaimManager:
                     "task_file": str(task_file)
                 }
 
-            # Write updated content to target location
-            target_file.write_text(updated_content, encoding='utf-8')
+            # Write updated content to a temporary file first for atomicity
+            temp_file = target_file.with_suffix(f"{target_file.suffix}.tmp")
+            temp_file.write_text(updated_content, encoding='utf-8')
 
-            # Remove original file
+            # Atomically move the temporary file to the final destination
+            os.replace(temp_file, target_file)
+
+            # Now that the new file is safely in place, remove the original
             task_file.unlink()
 
             duration_ms = int((time.time() - start_time) * 1000)
@@ -358,10 +362,14 @@ class ClaimManager:
                     "task_file": str(task_file)
                 }
 
-            # Write updated content to target location
-            target_file.write_text(updated_content, encoding='utf-8')
+            # Write updated content to a temporary file first for atomicity
+            temp_file = target_file.with_suffix(f"{target_file.suffix}.tmp")
+            temp_file.write_text(updated_content, encoding='utf-8')
 
-            # Remove original file
+            # Atomically move the temporary file to the final destination
+            os.replace(temp_file, target_file)
+
+            # Now that the new file is safely in place, remove the original
             task_file.unlink()
 
             duration_ms = int((time.time() - start_time) * 1000)

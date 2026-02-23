@@ -6,6 +6,7 @@ Detects and recovers tasks that have been claimed but not completed.
 
 import logging
 import time
+import yaml
 from pathlib import Path
 from typing import List, Dict
 from datetime import datetime, timezone, timedelta
@@ -186,18 +187,10 @@ class TaskWatchdog:
             if content.startswith('---'):
                 parts = content.split('---', 2)
                 if len(parts) >= 3:
-                    frontmatter = parts[1]
-                    metadata = {}
-
-                    for line in frontmatter.split('\n'):
-                        if ':' in line:
-                            key, value = line.split(':', 1)
-                            metadata[key.strip()] = value.strip()
-
-                    return metadata
-
+                    frontmatter_text = parts[1]
+                    metadata = yaml.safe_load(frontmatter_text)
+                    return metadata if isinstance(metadata, dict) else {}
             return {}
-
-        except Exception as e:
-            logger.error(f"Error parsing task metadata: {e}")
+        except (yaml.YAMLError, Exception) as e:
+            logger.error(f"Error parsing task metadata for {task_file.name}: {e}")
             return {}
