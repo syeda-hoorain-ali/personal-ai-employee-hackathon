@@ -4,12 +4,18 @@ tmpclaude-*
 !.env.example
 gmail_credentials.json
 token.pickle
-AI_Employee_Vault
-*vault*
+AI_Employee_Vault/
 !*vault*.py
 
 *.local
 *.local.*
+
+# Secrets and credentials
+credentials/
+sessions/
+*.token
+*.key
+*.pem
 
 # Python
 __pycache__/

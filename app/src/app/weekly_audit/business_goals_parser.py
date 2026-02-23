@@ -20,7 +20,7 @@ logger = logging.getLogger("weekly_audit.business_goals_parser")
 class BusinessGoalsParser:
     """
     Parser for extracting business goals from Business_Goals.md.
-    
+
     The file is expected to have YAML frontmatter containing:
     - revenue_target
     - current_revenue
@@ -59,22 +59,22 @@ class BusinessGoalsParser:
 
         try:
             content = self.file_path.read_text(encoding="utf-8")
-            
+
             # Extract YAML frontmatter
             if not content.startswith("---"):
                 raise ValueError("Business_Goals.md must start with YAML frontmatter (---)")
-            
+
             # Split content by frontmatter delimiters
             parts = content.split("---", 2)
             if len(parts) < 3:
                 raise ValueError("Invalid YAML frontmatter format")
-            
+
             yaml_content = parts[1].strip()
             data = yaml.safe_load(yaml_content)
-            
+
             if not data:
                 raise ValueError("YAML frontmatter is empty")
-            
+
             # Parse and validate required fields
             business_goals = BusinessGoals(
                 revenue_target=Decimal(str(data["revenue_target"])),
@@ -88,10 +88,10 @@ class BusinessGoalsParser:
                 last_updated=self._parse_date(data["last_updated"]),
                 review_frequency=data.get("review_frequency", "weekly")
             )
-            
+
             logger.info(f"Successfully parsed business goals: revenue_target={business_goals.revenue_target}")
             return business_goals
-            
+
         except KeyError as e:
             logger.error(f"Missing required field in Business_Goals.md: {e}")
             raise ValueError(f"Missing required field: {e}")

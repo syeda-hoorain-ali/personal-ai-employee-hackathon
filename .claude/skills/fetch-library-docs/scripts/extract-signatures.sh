@@ -9,7 +9,7 @@ MAX_SIGS="${1:-3}"
 # Use awk to find common API patterns
 awk -v max="$MAX_SIGS" '
   BEGIN { count = 0 }
-  
+
   # Function declarations
   /^(export )?(async )?(function|const|let|var) [a-zA-Z_$][a-zA-Z0-9_$]*.*\(/ {
     if (count < max) {
@@ -17,7 +17,7 @@ awk -v max="$MAX_SIGS" '
       count++
     }
   }
-  
+
   # Interface definitions
   /^(export )?interface [a-zA-Z_$]/ {
     if (count < max) {
@@ -31,7 +31,7 @@ awk -v max="$MAX_SIGS" '
       count++
     }
   }
-  
+
   # Type definitions
   /^(export )?type [a-zA-Z_$][a-zA-Z0-9_$]* =/ {
     if (count < max) {

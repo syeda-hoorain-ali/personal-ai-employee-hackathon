@@ -73,3 +73,12 @@ class HealthStatusError(ErrorRecoveryException):
 class WatchdogError(ErrorRecoveryException):
     """Raised when watchdog operations fail."""
     pass
+
+
+class TaskValidationError(ErrorRecoveryException):
+    """Raised when task file validation fails."""
+
+    def __init__(self, file_path: str, field: str, message: str):
+        self.file_path = file_path
+        self.field = field
+        super().__init__(f"Validation error in '{file_path}' for field '{field}': {message}")

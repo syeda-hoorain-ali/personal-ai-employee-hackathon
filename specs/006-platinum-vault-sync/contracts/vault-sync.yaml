@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: Vault Sync API
+  description: Git synchronization operations for AI Employee vault
+  version: 1.0.0
+
+paths:
+  /sync:
+    post:
+      summary: Synchronize vault with remote repository
+      description: |
+        Performs full sync cycle: pull latest changes, commit local changes, push to remote.
+        This is the primary operation for keeping Cloud and Local vaults in sync.
+      operationId: syncVault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vault_path
+                - commit_message
+              properties:
+                vault_path:
+                  type: string
+                  description: Absolute path to vault directory
+                  example: "/home/user/AI_Employee_Vault"
+                commit_message:
+                  type: string
+                  description: "Commit message following convention [agent] action domain: description"
+                  example: "[cloud-agent] claim email: Triage inbox (5 emails)"
+                agent_name:
+                  type: string
+                  description: Name of agent performing sync
+                  example: "cloud-agent"
+                  default: "local-agent"
+      responses:
+        '200':
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  commits_pulled:
+                    type: integer
+                    description: Number of commits pulled from remote
+                    example: 3
+                  commits_pushed:
+                    type: integer
+                    description: Number of commits pushed to remote
+                    example: 1
+                  files_changed:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Needs_Action/email/task-001.md", "Dashboard.md"]
+                  sync_duration_ms:
+                    type: integer
+                    description: Time taken for sync operation in milliseconds
+                    example: 2340
+        '409':
+          description: Merge conflict detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '503':
+          description: Network error during sync
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkError'
+
+  /sync/pull:
+    post:
+      summary: Pull latest changes from remote
+      description: Fetch and merge changes from remote repository
+      operationId: pullChanges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vault_path
+              properties:
+                vault_path:
+                  type: string
+                  example: "/home/user/AI_Employee_Vault"
+                rebase:
+                  type: boolean
+                  description: Use rebase instead of merge
+                  default: true
+      responses:
+        '200':
+          description: Pull completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  commits_pulled:
+                    type: integer
+                  files_updated:
+                    type: array
+                    items:
+                      type: string
+
+  /sync/push:
+    post:
+      summary: Push local changes to remote
+      description: Push committed changes to remote repository
+      operationId: pushChanges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vault_path
+              properties:
+                vault_path:
+                  type: string
+                  example: "/home/user/AI_Employee_Vault"
+                force:
+                  type: boolean
+                  description: Force push (use with caution)
+                  default: false
+      responses:
+        '200':
+          description: Push completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  commits_pushed:
+                    type: integer
+
+  /sync/status:
+    get:
+      summary: Get vault sync status
+      description: Check if vault has uncommitted changes or is behind remote
+      operationId: getSyncStatus
+      parameters:
+        - name: vault_path
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "/home/user/AI_Employee_Vault"
+      responses:
+        '200':
+          description: Sync status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  has_uncommitted_changes:
+                    type: boolean
+                  uncommitted_files:
+                    type: array
+                    items:
+                      type: string
+                  commits_behind:
+                    type: integer
+                    description: Number of commits behind remote
+                  commits_ahead:
+                    type: integer
+                    description: Number of commits ahead of remote
+                  last_sync:
+                    type: string
+                    format: date-time
+                    description: Timestamp of last successful sync
+
+components:
+  schemas:
+    ConflictError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "ConflictError"
+        message:
+          type: string
+          example: "Merge conflict detected in Dashboard.md"
+        conflicts:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+                example: "Dashboard.md"
+              conflict_type:
+                type: string
+                enum: [content, delete, rename]
+              resolution_strategy:
+                type: string
+                enum: [local_wins, remote_wins, manual]
+
+    NetworkError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "NetworkError"
+        message:
+          type: string
+          example: "Failed to connect to remote repository"
+        retry_after_seconds:
+          type: integer
+          description: Suggested retry delay
+          example: 60
+        operation:
+          type: string
+          enum: [pull, push, fetch]
