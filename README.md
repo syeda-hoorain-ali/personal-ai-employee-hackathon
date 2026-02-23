@@ -39,8 +39,8 @@ Estimated time: 8-12 hours
 ### **Silver Tier: Functional Assistant**
 
 Estimated time: 20-30 hours
+All Bronze requirements plus:
 
-- [X] All Bronze requirements
 - [X] Two or more Watcher scripts (e.g., Gmail + Whatsapp + LinkedIn)
 - [X] Automatically Post on LinkedIn about business to generate sales
 - [X] Claude reasoning loop that creates Plan.md files
@@ -52,30 +52,51 @@ Estimated time: 20-30 hours
 ### **Gold Tier: Autonomous Employee**
 
 Estimated time: 40+ hours
+All Silver requirements plus:
 
-- [X] All Silver requirements
 - [X] Full cross-domain integration (Personal + Business)
 - [X] Create accounting system for your business in Xero ( [https://www.xero.com/](https://www.xero.com/) ) and integrate it with its MCP Server ( [https://github.com/XeroAPI/xero-mcp-server](https://github.com/XeroAPI/xero-mcp-server) )
-- [-] Integrate Facebook and Instagram and post messages and generate summary
+- [ ] Integrate Facebook and Instagram and post messages and generate summary
 - [X] Integrate Twitter (X) and post messages and generate summary
 - [X] Multiple MCP servers for different action types
 - [X] Weekly Business and Accounting Audit with CEO Briefing generation
 - [X] Error recovery and graceful degradation
-- [x] Comprehensive audit logging
+- [X] Comprehensive audit logging
 - [X] Ralph Wiggum loop for autonomous multi-step task completion
-- [X] Documentation of your architecture and decisions
+- [X] Documentation of your architecture and lessons learned
+- [X] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-### **Platinum Tier: Enterprise Solution**
+### **Platinum Tier: Always-On Cloud + Local Executive (Production-ish AI Employee)**
 
-Estimated time: 80+ hours
+Estimated time: 60+ hours
+All Gold requirements plus:
 
-- [X] All Gold requirements
-- [ ] Advanced AI reasoning with predictive capabilities
-- [ ] Multi-user support with role-based access controls
-- [X] Advanced reporting and analytics dashboard
-- [ ] Integration with enterprise systems (CRM, ERP, etc.)
-- [ ] Advanced security features and compliance
-- [ ] Scalable infrastructure with load balancing
-- [X] Advanced error handling and self-healing capabilities
-- [X] Complete documentation suite and user guides
-- [ ] Performance optimization and caching strategies
+- [ ] **Run the AI Employee on Cloud 24/7** (always-on watchers + orchestrator + health monitoring). Deploy to Cloud VM (Oracle/AWS/etc.) - [Oracle Cloud Free VMs](https://www.oracle.com/cloud/free/) can be used for this
+- [ ] **Work-Zone Specialization (domain ownership)**:
+  - **Cloud owns:** Email triage + draft replies + social post drafts/scheduling (draft-only; requires Local approval before send/post)
+  - **Local owns:** approvals, WhatsApp session, payments/banking, and final "send/post" actions
+- [ ] **Delegation via Synced Vault (Phase 1)**
+  - Agents communicate by writing files into: /Needs_Action/\<domain\>/, /Plans/\<domain\>/, /Pending_Approval/\<domain\>/
+  - Prevent double-work using:
+    - /In_Progress/\<agent\>/ claim-by-move rule
+    - single-writer rule for Dashboard.md (Local)
+    - Cloud writes updates to /Updates/ (or /Signals/), and Local merges them into Dashboard.md
+  - For Vault sync (Phase 1) use Git (recommended) or Syncthing
+  - **Claim-by-move rule:** first agent to move an item from /Needs_Action to /In_Progress/\<agent\>/ owns it; other agents must ignore it
+- [ ] **Security rule:** Vault sync includes only markdown/state. Secrets never sync (.env, tokens, WhatsApp sessions, banking creds). Cloud never stores or uses WhatsApp sessions, banking credentials, or payment tokens
+- [ ] **Optional A2A Upgrade (Phase 2):** Replace some file handoffs with direct A2A messages later, while keeping the vault as the audit record
+- [ ] **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud drafts reply + writes approval file → when Local returns, user approves → Local executes send via MCP → logs → moves task to /Done
+
+#### **Platinum Phase 1A: Vault Sync Infrastructure (COMPLETE)**
+
+**Status**: Implementation complete - Core infrastructure ready for Cloud-Local coordination
+
+**What's Delivered**:
+- **Secure Vault Synchronization (US1)**: Git-based vault sync with zero secrets in repository. Pre-commit hooks and .gitignore ensure credentials never leave local machine
+- **Domain-Based Work Separation (US2)**: Organized vault structure with domain-specific directories (email/, social/, local-only/) so agents have clear ownership boundaries
+- **Conflict-Free Task Claiming (US3)**: Atomic claim-by-move protocol prevents duplicate work. Watchdog monitors stalled tasks and recovers them automatically
+- **Dashboard Single-Writer Rule (US4)**: Local agent owns Dashboard.md writes, Cloud agent writes to Updates/ directory to prevent merge conflicts
+
+**Setup Instructions**: See [Platinum Vault Sync Quickstart Guide](specs/006-platinum-vault-sync/quickstart.md) for complete setup and configuration steps
+
+**Architecture**: Cloud and Local agents coordinate through a Git-synced vault with domain-based work zones, atomic task claiming, and single-writer dashboard updates

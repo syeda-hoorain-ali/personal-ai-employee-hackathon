@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: Claim Protocol API
+  description: Task claiming operations for agent coordination
+  version: 1.0.0
+
+paths:
+  /claim:
+    post:
+      summary: Claim a task
+      description: |
+        Atomically move task from Needs_Action to In_Progress.
+        Uses filesystem operations for atomicity - only one agent can claim a task.
+      operationId: claimTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_path
+                - agent_name
+              properties:
+                task_path:
+                  type: string
+                  description: Absolute path to task file in Needs_Action
+                  example: "/home/user/AI_Employee_Vault/Needs_Action/email/task-001.md"
+                agent_name:
+                  type: string
+                  description: Name of agent claiming task
+                  example: "cloud-agent"
+                  enum: [cloud-agent, local-agent]
+      responses:
+        '200':
+          description: Task claimed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  claim_path:
+                    type: string
+                    description: New path in In_Progress directory
+                    example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+                  claimed_at:
+                    type: string
+                    format: date-time
+                    example: "2026-02-22T10:35:00Z"
+        '409':
+          description: Task already claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlreadyClaimedError'
+        '403':
+          description: Agent not authorized for domain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainAccessError'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "TaskNotFoundError"
+                  message:
+                    type: string
+                    example: "Task file does not exist"
+
+  /claim/release:
+    post:
+      summary: Release a claimed task
+      description: Move task from In_Progress back to Needs_Action (e.g., if agent cannot complete)
+      operationId: releaseTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_path
+                - agent_name
+              properties:
+                task_path:
+                  type: string
+                  description: Path to task in In_Progress
+                  example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+                agent_name:
+                  type: string
+                  description: Agent releasing the task
+                  example: "cloud-agent"
+                reason:
+                  type: string
+                  description: Reason for release
+                  example: "Cannot access Gmail API"
+      responses:
+        '200':
+          description: Task released successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  release_path:
+                    type: string
+                    description: New path in Needs_Action
+                    example: "/home/user/AI_Employee_Vault/Needs_Action/email/task-001.md"
+
+  /claim/complete:
+    post:
+      summary: Complete a claimed task
+      description: Move task from In_Progress to Done with timestamp
+      operationId: completeTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_path
+                - agent_name
+              properties:
+                task_path:
+                  type: string
+                  example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+                agent_name:
+                  type: string
+                  example: "cloud-agent"
+                completion_notes:
+                  type: string
+                  description: Summary of work done
+                  example: "Drafted reply, moved to Pending_Approval"
+      responses:
+        '200':
+          description: Task completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  done_path:
+                    type: string
+                    description: New path in Done directory with timestamp
+                    example: "/home/user/AI_Employee_Vault/Done/email/task-001-20260222.md"
+                  completed_at:
+                    type: string
+                    format: date-time
+
+  /claim/list:
+    get:
+      summary: List claimed tasks
+      description: Get all tasks currently claimed by an agent
+      operationId: listClaimedTasks
+      parameters:
+        - name: agent_name
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "cloud-agent"
+        - name: vault_path
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "/home/user/AI_Employee_Vault"
+      responses:
+        '200':
+          description: List of claimed tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClaimedTask'
+
+  /claim/validate:
+    post:
+      summary: Validate claim ownership
+      description: Check if agent owns a specific task claim
+      operationId: validateClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_path
+                - agent_name
+              properties:
+                task_path:
+                  type: string
+                  example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+                agent_name:
+                  type: string
+                  example: "cloud-agent"
+      responses:
+        '200':
+          description: Claim validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_valid:
+                    type: boolean
+                    description: True if agent owns the claim
+                  claimed_by:
+                    type: string
+                    description: Agent that owns the claim
+                  claimed_at:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    ClaimedTask:
+      type: object
+      properties:
+        task_id:
+          type: string
+          example: "task-20260222-103000-email-001"
+        task_path:
+          type: string
+          example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+        domain:
+          type: string
+          enum: [email, social, local-only]
+        priority:
+          type: string
+          enum: [high, medium, low]
+        claimed_at:
+          type: string
+          format: date-time
+        time_in_progress:
+          type: integer
+          description: Seconds since claim
+          example: 1200
+
+    AlreadyClaimedError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "AlreadyClaimedError"
+        message:
+          type: string
+          example: "Task already claimed by another agent"
+        claimed_by:
+          type: string
+          description: Agent that currently owns the claim
+          example: "local-agent"
+        claimed_at:
+          type: string
+          format: date-time
+
+    DomainAccessError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "DomainAccessError"
+        message:
+          type: string
+          example: "Agent not authorized to access this domain"
+        agent_name:
+          type: string
+          example: "cloud-agent"
+        domain:
+          type: string
+          example: "local-only"
+        allowed_domains:
+          type: array
+          items:
+            type: string
+          example: ["email", "social"]

@@ -24,6 +24,10 @@ def setup_logging(log_level=logging.INFO, log_dir=None):
     weekly_audit_logger = logging.getLogger("weekly_audit")
     weekly_audit_logger.setLevel(log_level)
 
+    # Configure vault_sync module logger for structured logging
+    vault_sync_logger = logging.getLogger("vault_sync")
+    vault_sync_logger.setLevel(log_level)
+
     # Clear existing handlers
     logger.handlers.clear()
 

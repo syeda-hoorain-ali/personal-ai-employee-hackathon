@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # create-phr.sh - Create Prompt History Record (PHR) - Spec Kit Native
-# 
+#
 # Deterministic PHR location strategy:
 # 1. Constitution stage:
 #    → history/prompts/constitution/

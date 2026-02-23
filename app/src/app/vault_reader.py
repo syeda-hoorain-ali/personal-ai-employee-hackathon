@@ -3,9 +3,13 @@ Module for handling file reading functionality for Claude Code to access vault f
 """
 
 import os
+import re
+import yaml
 from pathlib import Path
 from typing import List, Dict, Optional
 import logging
+
+from app.error_recovery.exceptions import TaskValidationError
 
 
 class VaultReader:
@@ -39,6 +43,104 @@ class VaultReader:
         except Exception as e:
             self.logger.error(f"Error reading file {full_path}: {e}")
             return None
+
+    def parse_task_frontmatter(self, file_path: str) -> Optional[Dict]:
+        """
+        Parse YAML frontmatter from a task file.
+
+        Args:
+            file_path: Path to the file relative to vault root
+
+        Returns:
+            Dictionary with frontmatter data or None if parsing fails
+
+        Raises:
+            TaskValidationError: If frontmatter validation fails
+        """
+        content = self.read_file(file_path)
+        if not content:
+            return None
+
+        try:
+            # Extract YAML frontmatter between --- markers
+            if content.startswith('---'):
+                parts = content.split('---', 2)
+                if len(parts) >= 3:
+                    frontmatter_text = parts[1].strip()
+                    frontmatter = yaml.safe_load(frontmatter_text)
+
+                    # Validate required fields (raises TaskValidationError if invalid)
+                    self._validate_task_frontmatter(frontmatter, file_path)
+                    return frontmatter
+
+            self.logger.warning(f"No frontmatter found in {file_path}")
+            return None
+
+        except TaskValidationError:
+            # Re-raise validation errors with clear messages
+            raise
+        except yaml.YAMLError as e:
+            self.logger.error(f"YAML parsing error in {file_path}: {e}")
+            raise TaskValidationError(
+                file_path=file_path,
+                field='yaml',
+                message=f"YAML parsing failed: {str(e)}"
+            )
+        except Exception as e:
+            self.logger.error(f"Error parsing frontmatter in {file_path}: {e}")
+            return None
+
+    def _validate_task_frontmatter(self, frontmatter: Dict, file_path: str) -> None:
+        """
+        Validate task file YAML frontmatter.
+
+        Args:
+            frontmatter: Parsed frontmatter dictionary
+            file_path: Path to the file being validated (for error messages)
+
+        Raises:
+            TaskValidationError: If validation fails with clear error message
+        """
+        required_fields = ['id', 'domain', 'priority', 'created', 'status', 'source']
+        valid_domains = ['email', 'social', 'local-only']
+        valid_priorities = ['high', 'medium', 'low']
+        valid_statuses = ['pending', 'in_progress', 'completed']
+
+        # Check required fields exist
+        for field in required_fields:
+            if field not in frontmatter:
+                raise TaskValidationError(
+                    file_path=file_path,
+                    field=field,
+                    message=f"Missing required field. Required fields are: {', '.join(required_fields)}"
+                )
+
+        # Validate domain
+        domain = frontmatter.get('domain')
+        if domain not in valid_domains:
+            raise TaskValidationError(
+                file_path=file_path,
+                field='domain',
+                message=f"Invalid domain '{domain}'. Must be one of: {', '.join(valid_domains)}"
+            )
+
+        # Validate priority
+        priority = frontmatter.get('priority')
+        if priority not in valid_priorities:
+            raise TaskValidationError(
+                file_path=file_path,
+                field='priority',
+                message=f"Invalid priority '{priority}'. Must be one of: {', '.join(valid_priorities)}"
+            )
+
+        # Validate status
+        status = frontmatter.get('status')
+        if status not in valid_statuses:
+            raise TaskValidationError(
+                file_path=file_path,
+                field='status',
+                message=f"Invalid status '{status}'. Must be one of: {', '.join(valid_statuses)}"
+            )
 
     def read_files_in_directory(self, directory: str, extension: str = ".md") -> Dict[str, str]:
         """

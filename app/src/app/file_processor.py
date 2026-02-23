@@ -8,9 +8,11 @@ import re
 import logging
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 from .vault_reader import VaultReader
 from .vault_writer import VaultWriter
+from .domain_manager.domain_router import DomainRouter
+from .claim_protocol.claim_manager import ClaimManager
 from .error_recovery import (
     ErrorLogger,
     CircuitBreaker,
@@ -26,11 +28,28 @@ class FileProcessor:
     Class to monitor and automatically trigger Claude Code to process files based on Company Handbook rules.
     This version actively invokes Claude Code when files are detected in the Needs_Action folder.
     """
-    def __init__(self, vault_path: str):
+    def __init__(self, vault_path: str, agent_name: str = None):
         self.vault_path = Path(vault_path)
         self.reader = VaultReader(vault_path)
         self.writer = VaultWriter(vault_path)
         self.logger = logging.getLogger(self.__class__.__name__)
+
+        # Initialize domain router for domain-based access control
+        self.agent_name = agent_name or os.getenv("AGENT_NAME", "local-agent")
+        try:
+            self.domain_router = DomainRouter(vault_path, self.agent_name)
+            self.logger.info(f"Initialized DomainRouter for agent: {self.agent_name}")
+        except Exception as e:
+            self.logger.warning(f"Could not initialize DomainRouter: {e}")
+            self.domain_router = None
+
+        # Initialize claim manager for task claiming
+        try:
+            self.claim_manager = ClaimManager(vault_path, self.agent_name)
+            self.logger.info(f"Initialized ClaimManager for agent: {self.agent_name}")
+        except Exception as e:
+            self.logger.warning(f"Could not initialize ClaimManager: {e}")
+            self.claim_manager = None
 
         # Initialize error logger
         logs_dir = self.vault_path / "Logs"
@@ -513,6 +532,7 @@ class FileProcessor:
         """
         Process all files in the Needs_Action directory by creating Claude Code prompts.
         This simulates how Claude Code would process files in the Needs_Action folder.
+        Now includes domain-based filtering to only process tasks in allowed domains.
 
         Returns:
             Dictionary with processing results
@@ -522,23 +542,51 @@ class FileProcessor:
             "successful": [],
             "failed": [],
             "approval_needed": [],
+            "filtered_by_domain": [],
         }
 
         try:
-            # Get all files in Needs_Action directory, excluding metadata files
-            needs_action_files = [f for f in self.reader.get_file_list("Needs_Action", ".md") if not f.endswith('_meta.md')]
+            # Get all accessible domain directories if domain router is enabled
+            if self.domain_router:
+                accessible_dirs = self.domain_router.get_all_accessible_directories("Needs_Action")
+                needs_action_files = []
 
-            for filename in needs_action_files:
-                file_path = f"Needs_Action/{filename}"
+                for domain_dir in accessible_dirs:
+                    domain_files = [domain_dir / f for f in domain_dir.glob("*.md") if not f.name.endswith('_meta.md')]
+                    needs_action_files.extend(domain_files)
+
+                self.logger.info(f"Found {len(needs_action_files)} files in accessible domains: {self.domain_router.get_allowed_domains()}")
+            else:
+                # Fallback: process all files in Needs_Action (legacy behavior)
+                needs_action_files = [
+                    self.vault_path / "Needs_Action" / f
+                    for f in self.reader.get_file_list("Needs_Action", ".md")
+                    if not f.endswith('_meta.md')
+                ]
+
+            for file_full_path in needs_action_files:
+                # Get relative path from vault root
+                try:
+                    file_path = str(file_full_path.relative_to(self.vault_path))
+                except ValueError:
+                    file_path = str(file_full_path)
 
                 # Check if this file has already been processed to avoid repetitive logging
                 if file_path in self.processed_files:
                     continue
 
+                # Additional domain validation if domain router is enabled
+                if self.domain_router:
+                    domain = self.domain_router._extract_domain_from_path(file_full_path)
+                    if domain and not self.domain_router.can_access_domain(domain):
+                        results["filtered_by_domain"].append(file_full_path.name)
+                        self.logger.debug(f"Filtered out task in unauthorized domain {domain}: {file_full_path.name}")
+                        continue
+
                 success, message = self.process_file(file_path)
 
                 if success:
-                    results["successful"].append(filename)
+                    results["successful"].append(file_full_path.name)
                     results["processed_count"] += 1
                     # Mark this file as processed to avoid re-processing
                     self.processed_files.add(file_path)
@@ -548,8 +596,8 @@ class FileProcessor:
                         # We'll assume Claude will handle approval decisions
                         pass
                 else:
-                    results["failed"].append(filename)
-                    self.logger.error(f"Failed to process {filename}: {message}")
+                    results["failed"].append(file_full_path.name)
+                    self.logger.error(f"Failed to process {file_full_path.name}: {message}")
                     # Error already logged in process_file(), no need to duplicate
 
         except Exception as e:

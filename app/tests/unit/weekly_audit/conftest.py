@@ -22,12 +22,12 @@ def mock_vault_path(tmp_path):
     """
     vault = tmp_path / "AI_Employee_Vault"
     vault.mkdir()
-    
+
     # Create subdirectories
     (vault / "Done").mkdir()
     (vault / "Accounting").mkdir()
     (vault / "Briefings").mkdir()
-    
+
     return vault
 
 

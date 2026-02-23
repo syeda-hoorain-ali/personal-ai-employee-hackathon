@@ -722,10 +722,10 @@ class TestAuthenticationErrorCircuitBreaker:
 
         # Check dashboard
         dashboard = read_json_file(dashboard_path)
-        
+
         # Should have paused component
         assert "TestComponent" in dashboard.get("paused_components", {})
-        
+
         # Should have action required alert
         assert "action_required_alerts" in dashboard
         if dashboard["action_required_alerts"]:

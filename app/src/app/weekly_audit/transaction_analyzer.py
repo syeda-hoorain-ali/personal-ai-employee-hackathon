@@ -20,7 +20,7 @@ logger = logging.getLogger("weekly_audit.transaction_analyzer")
 class TransactionAnalyzer:
     """
     Analyzer for financial transactions.
-    
+
     Reads CSV files from /Accounting folder and calculates financial summaries.
     Expected CSV format: date, amount, description, category
     """
@@ -85,12 +85,12 @@ class TransactionAnalyzer:
 
         with open(file_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-            
+
             for row in reader:
                 try:
                     # Parse transaction date
                     transaction_date = self._parse_date(row['date'])
-                    
+
                     # Filter by date range
                     if start_date <= transaction_date <= end_date:
                         transaction = Transaction(
@@ -101,7 +101,7 @@ class TransactionAnalyzer:
                             source_file=file_path
                         )
                         transactions.append(transaction)
-                        
+
                 except KeyError as e:
                     logger.warning(f"Missing required column in {file_path}: {e}")
                     continue
@@ -155,7 +155,7 @@ class TransactionAnalyzer:
                 # Negative amount = expense
                 expense_amount = abs(transaction.amount)
                 total_expenses += expense_amount
-                
+
                 # Track by category
                 category = transaction.category
                 if category not in expense_categories:

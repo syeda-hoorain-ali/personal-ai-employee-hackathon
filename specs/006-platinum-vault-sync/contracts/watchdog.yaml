@@ -1,0 +1,231 @@
+openapi: 3.0.0
+info:
+  title: Watchdog API
+  description: Stalled task detection and recovery operations
+  version: 1.0.0
+
+paths:
+  /watchdog/check:
+    post:
+      summary: Check for stalled tasks
+      description: |
+        Scan In_Progress directory for tasks with no updates for timeout period.
+        Default timeout is 30 minutes.
+      operationId: checkStalledTasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vault_path
+              properties:
+                vault_path:
+                  type: string
+                  description: Absolute path to vault directory
+                  example: "/home/user/AI_Employee_Vault"
+                timeout_minutes:
+                  type: integer
+                  description: Minutes of inactivity before task considered stalled
+                  default: 30
+                  minimum: 5
+                  maximum: 120
+      responses:
+        '200':
+          description: Stalled tasks check completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stalled_tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StalledTask'
+                  recovered_count:
+                    type: integer
+                    description: Number of tasks moved back to Needs_Action
+                  check_duration_ms:
+                    type: integer
+
+  /watchdog/recover:
+    post:
+      summary: Recover a stalled task
+      description: Move specific task from In_Progress back to Needs_Action
+      operationId: recoverTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_path
+              properties:
+                task_path:
+                  type: string
+                  description: Path to stalled task in In_Progress
+                  example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+                reason:
+                  type: string
+                  description: Recovery reason
+                  example: "No updates for 35 minutes"
+      responses:
+        '200':
+          description: Task recovered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  recovery_path:
+                    type: string
+                    description: New path in Needs_Action
+                    example: "/home/user/AI_Employee_Vault/Needs_Action/email/task-001.md"
+                  recovered_at:
+                    type: string
+                    format: date-time
+
+  /watchdog/status:
+    get:
+      summary: Get watchdog status
+      description: Get information about watchdog monitoring
+      operationId: getWatchdogStatus
+      parameters:
+        - name: vault_path
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "/home/user/AI_Employee_Vault"
+      responses:
+        '200':
+          description: Watchdog status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_running:
+                    type: boolean
+                  last_check:
+                    type: string
+                    format: date-time
+                  check_interval_seconds:
+                    type: integer
+                    example: 300
+                  timeout_minutes:
+                    type: integer
+                    example: 30
+                  tasks_monitored:
+                    type: integer
+                    description: Total tasks in In_Progress
+                  tasks_recovered_today:
+                    type: integer
+
+  /watchdog/start:
+    post:
+      summary: Start watchdog monitoring
+      description: Begin periodic checks for stalled tasks
+      operationId: startWatchdog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vault_path
+              properties:
+                vault_path:
+                  type: string
+                  example: "/home/user/AI_Employee_Vault"
+                check_interval_seconds:
+                  type: integer
+                  description: Seconds between checks
+                  default: 300
+                  minimum: 60
+                timeout_minutes:
+                  type: integer
+                  description: Minutes before task considered stalled
+                  default: 30
+      responses:
+        '200':
+          description: Watchdog started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  started_at:
+                    type: string
+                    format: date-time
+
+  /watchdog/stop:
+    post:
+      summary: Stop watchdog monitoring
+      description: Stop periodic checks for stalled tasks
+      operationId: stopWatchdog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vault_path
+              properties:
+                vault_path:
+                  type: string
+                  example: "/home/user/AI_Employee_Vault"
+      responses:
+        '200':
+          description: Watchdog stopped
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  stopped_at:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    StalledTask:
+      type: object
+      properties:
+        task_id:
+          type: string
+          example: "task-20260222-103000-email-001"
+        task_path:
+          type: string
+          example: "/home/user/AI_Employee_Vault/In_Progress/cloud-agent/task-001.md"
+        domain:
+          type: string
+          enum: [email, social, local-only]
+        claimed_by:
+          type: string
+          example: "cloud-agent"
+        claimed_at:
+          type: string
+          format: date-time
+        last_modified:
+          type: string
+          format: date-time
+          description: Last time task file was updated
+        stalled_duration_minutes:
+          type: integer
+          description: Minutes since last update
+          example: 35
+        recovery_action:
+          type: string
+          enum: [move_to_needs_action, notify_user, quarantine]
+          description: Action taken or recommended

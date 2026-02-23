@@ -21,7 +21,7 @@ logger = logging.getLogger("weekly_audit.task_analyzer")
 class TaskAnalyzer:
     """
     Analyzer for completed tasks and bottleneck identification.
-    
+
     Scans the /Done folder for task files modified within the analysis period
     and extracts task metadata from YAML frontmatter.
     """
@@ -62,12 +62,12 @@ class TaskAnalyzer:
             try:
                 # Get file modification time
                 mtime = datetime.fromtimestamp(os.path.getmtime(task_file))
-                
+
                 if mtime >= cutoff_time:
                     task = self._parse_task_file(task_file, mtime)
                     completed_tasks.append(task)
                     logger.debug(f"Found completed task: {task.name}")
-                    
+
             except Exception as e:
                 logger.warning(f"Error parsing task file {task_file}: {e}")
                 continue
@@ -88,10 +88,10 @@ class TaskAnalyzer:
         """
         # Extract task name from filename
         task_name = file_path.stem.replace("-", " ").replace("_", " ").title()
-        
+
         # Try to parse YAML frontmatter for metadata
         metadata = self.parse_task_metadata(file_path)
-        
+
         return CompletedTask(
             name=task_name,
             completion_date=completion_date,
@@ -114,20 +114,20 @@ class TaskAnalyzer:
         """
         try:
             content = file_path.read_text(encoding="utf-8")
-            
+
             if not content.startswith("---"):
                 return {}
-            
+
             # Split by frontmatter delimiters
             parts = content.split("---", 2)
             if len(parts) < 3:
                 return {}
-            
+
             yaml_content = parts[1].strip()
             metadata = yaml.safe_load(yaml_content)
-            
+
             return metadata if metadata else {}
-            
+
         except Exception as e:
             logger.debug(f"No valid YAML frontmatter in {file_path}: {e}")
             return {}
@@ -146,29 +146,29 @@ class TaskAnalyzer:
         """
         if not duration_str:
             return None
-        
+
         try:
             duration_str = str(duration_str).lower().strip()
-            
+
             # Pattern: "2h 30m" or "2h" or "30m" or "1.5h"
             hours = 0
             minutes = 0
-            
+
             # Extract hours
             hour_match = re.search(r'([\d.]+)\s*h', duration_str)
             if hour_match:
                 hours = float(hour_match.group(1))
-            
+
             # Extract minutes
             minute_match = re.search(r'(\d+)\s*m', duration_str)
             if minute_match:
                 minutes = int(minute_match.group(1))
-            
+
             if hours == 0 and minutes == 0:
                 return None
-            
+
             return timedelta(hours=hours, minutes=minutes)
-            
+
         except Exception as e:
             logger.warning(f"Failed to parse duration '{duration_str}': {e}")
             return None
@@ -185,14 +185,14 @@ class TaskAnalyzer:
             List of TaskBottleneck entities, sorted by delay percentage (descending)
         """
         logger.info(f"Identifying bottlenecks with threshold {threshold * 100}%")
-        
+
         bottlenecks = []
-        
+
         for task in completed_tasks:
             if task.expected_duration and task.actual_duration:
                 if task.actual_duration > task.expected_duration * (1 + threshold):
                     delay_percent = ((task.actual_duration - task.expected_duration) / task.expected_duration) * 100
-                    
+
                     bottleneck = TaskBottleneck(
                         task_name=task.name,
                         expected_duration=task.expected_duration,
@@ -202,9 +202,9 @@ class TaskAnalyzer:
                     )
                     bottlenecks.append(bottleneck)
                     logger.debug(f"Bottleneck identified: {task.name} ({delay_percent:.1f}% delay)")
-        
+
         # Sort by delay percentage (highest first)
         bottlenecks.sort(key=lambda b: b.delay_percent, reverse=True)
-        
+
         logger.info(f"Found {len(bottlenecks)} bottlenecks")
         return bottlenecks
