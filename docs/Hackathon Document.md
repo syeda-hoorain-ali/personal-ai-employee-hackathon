@@ -1,4 +1,4 @@
-# **Personal AI Employee Hackathon 0: Building Autonomous FTEs (Full-Time Equivalent) in 2026**
+## Personal AI Employee Hackathon 0: Building Autonomous FTE(Full-Time Equivalent) in 2026**
 
 **Tagline:** *Your life and business on autopilot. Local-first, agent-driven, human-in-the-loop.*
 
@@ -37,11 +37,11 @@ If the Zoom meeting is full, you may watch live or recording at:
 
 In these meetings we will be teaching each other how to build and enhance our first AI Employee.
 
-## **Digital FTE: The New Unit of Value**
+## Digital FTE: The New Unit of Value
 
 A Digital FTE (Full-Time Equivalent) is an AI agent that is built, "hired," and priced as if it were a human employee. This shifts the conversation from "software licenses" to "headcount budgets."
 
-### **Human FTE vs Digital FTE**
+## Human FTE vs Digital FTE
 
 | Feature | Human FTE | Digital FTE (Custom Agent) |
 | ----- | ----- | ----- |
@@ -53,13 +53,15 @@ A Digital FTE (Full-Time Equivalent) is an AI agent that is built, "hired," and 
 | Cost per Task | ~$3.00 – $6.00 | ~$0.25 – $0.50 |
 | Annual Hours | ~2,000 hours | ~8,760 hours |
 
-**The 'Aha!' Moment: A Digital FTE works nearly 9,000 hours a year vs a human's 2,000. The cost per task reduction (from ~$5.00 to ~$0.50) is an 85–90% cost saving—usually the threshold where a CEO approves a project without further debate.**
+> **The 'Aha!' Moment: A Digital FTE works nearly 9,000 hours a year vs a human's 2,000. The cost per task reduction (from ~$5.00 to ~$0.50) is an 85–90% cost saving—usually the threshold where a CEO approves a project without further debate.**
 
-## **Prerequisites & Setup**
+---
+
+## Prerequisites & Setup
 
 Before diving into building your Personal AI Employee, ensure you have the following prerequisites in place. Estimated total setup time: 2-3 hours.
 
-### **Required Software**
+### Required Software
 
 | Component | Requirement | Purpose |
 | :---- | :---- | :---- |
@@ -69,17 +71,17 @@ Before diving into building your Personal AI Employee, ensure you have the follo
 | [Node.js](http://Node.js) | v24+ LTS | MCP servers & automation |
 | [Github Desktop](https://desktop.github.com/download/) | Latest stable | Version control for your vault |
 
-### **Hardware Requirements**
+
+### Hardware Requirements
 
 * Minimum: 8GB RAM, 4-core CPU, 20GB free disk space
 * Recommended: 16GB RAM, 8-core CPU, SSD storage
 * For always-on operation: Consider a dedicated mini-PC or cloud VM
 * Stable internet connection for API calls (10+ Mbps recommended)
 
-### **Skill Level Expectations**
+### Skill Level Expectations
 
 This hackathon assumes intermediate technical proficiency:
-
 * Comfortable with command-line interfaces (terminal/bash)
 * Understanding of file systems and folder structures
 * Familiarity with APIs (what they are, how to call them)
@@ -87,7 +89,7 @@ This hackathon assumes intermediate technical proficiency:
 * Able to use and prompt Claude Code
 * Prompt Claude Code to to convert AI functionality into [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-### **Pre-Hackathon Checklist**
+### Pre-Hackathon Checklist
 
 1. Install all required software listed above
 2. Create a new Obsidian vault named "AI_Employee_Vault"
@@ -95,11 +97,13 @@ This hackathon assumes intermediate technical proficiency:
 4. Set up a UV Python project
 5. Join the Wednesday Research Meeting Zoom link
 
-## Hackathon Scope & Tiered Deliverables
+---
+
+> ## Hackathon Scope & Tiered Deliverables
 
 To accommodate varying skill levels and time availability, we define three achievement tiers. Choose your target based on your experience and ambition.
 
-### **Bronze Tier: Foundation (Minimum Viable Deliverable)**
+### Bronze Tier: Foundation (Minimum Viable Deliverable)
 
 Estimated time: 8-12 hours
 
@@ -109,7 +113,7 @@ Estimated time: 8-12 hours
 * Basic folder structure: /Inbox, /Needs_Action, /Done
 * All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-## **Silver Tier: Functional Assistant**
+### Silver Tier: Functional Assistant
 
 Estimated time: 20-30 hours
 
@@ -122,13 +126,13 @@ Estimated time: 20-30 hours
 7. Basic scheduling via cron or Task Scheduler
 8. All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-## **Gold Tier: Autonomous Employee**
+### Gold Tier: Autonomous Employee
 
 Estimated time: 40+ hours
 
 1. All Silver requirements plus:
 2. Full cross-domain integration (Personal + Business)
-3. Create accounting system for your business in Xero ( [https://www.xero.com/](https://www.xero.com/) ) and integrate it with its MCP Server ( [https://github.com/XeroAPI/xero-mcp-server](https://github.com/XeroAPI/xero-mcp-server) )
+3. Create an accounting system for your business in Odoo Community (self-hosted, local) and integrate it via an [MCP server](https://github.com/AlanOgic/mcp-odoo-adv) using Odoo’s JSON-RPC APIs (Odoo 19+).
 4. Integrate Facebook and Instagram and post messages and generate summary
 5. Integrate Twitter (X) and post messages and generate summary
 6. Multiple MCP servers for different action types
@@ -139,7 +143,7 @@ Estimated time: 40+ hours
 11. Documentation of your architecture and lessons learned
 12. All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-## **Platinum Tier: Always-On Cloud + Local Executive (Production-ish AI Employee)**
+## Platinum Tier: Always-On Cloud + Local Executiv(Production-ish AI Employee)**
 
 Estimated time: 60+ hours
 All Gold requirements plus:
@@ -150,40 +154,46 @@ All Gold requirements plus:
    2. **Local owns:** approvals, WhatsApp session, payments/banking, and final “send/post” actions
 3. Delegation via Synced Vault (Phase 1)
    1. Agents communicate by **writing files** into:
-      1. /Needs_Action/<domain\>/, /Plans/<domain\>/, /Pending_Approval/<domain\>/
+      1. `/Needs_Action/<domain>/`, `/Plans/<domain>/`, `/Pending_Approval/<domain>/`
    2. Prevent double-work using:
-      1. /In_Progress/<agent\>/ claim-by-move rule
+      1. `/In_Progress/<agent>/` claim-by-move rule
       2. single-writer rule for Dashboard.md (Local)
       3. Cloud writes updates to /Updates/ (or /Signals/), and Local merges them into Dashboard.md.
    3. For Vault sync (Phase 1) use Git (recommended) or Syncthing.
-   4. **Claim-by-move rule:** first agent to move an item from /Needs_Action to /In_Progress/<agent\>/ owns it; other agents must ignore it.
+   4. **Claim-by-move rule:** first agent to move an item from `/Needs_Action` to `/In_Progress/<agent>/` owns it; other agents must ignore it.
 4. **Security rule:** Vault sync includes only markdown/state. Secrets never sync (.env, tokens, WhatsApp sessions, banking creds). So Cloud never stores or uses WhatsApp sessions, banking credentials, or payment tokens.
-5. Optional A2A Upgrade (Phase 2): Replace some file handoffs with direct A2A messages later, while keeping the vault as the audit record
-6. **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud drafts reply + writes approval file → when Local returns, user approves → Local executes send via MCP → logs → moves task to /Done.
+5. **Deploy Odoo Community on a Cloud VM (24/7)** with HTTPS, backups, and health monitoring; integrate Cloud Agent with Odoo via MCP for draft-only accounting actions and Local approval for posting invoices/payments.
+6. Optional A2A Upgrade (Phase 2): Replace some file handoffs with direct A2A messages later, while keeping the vault as the audit record
+7. **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud drafts reply + writes approval file → when Local returns, user approves → Local executes send via MCP → logs → moves task to /Done.
 
-### **1. The "Foundational Layer" (Local Engine)**
+---
+---
+
+## 1. The "Foundational Layer" (Local Engine)
 
 * **The Nerve Center (Obsidian):** Acts as the **GUI (Graphical User Interface)** and **Long-Term Memory**.
   * **Dashboard.md:** Real-time summary of bank balance, pending messages, and active business projects.
   * **Company_Handbook.md:** Contains your "Rules of Engagement" (e.g., "Always be polite on WhatsApp," "Flag any payment over $500 for my approval").
 * **The Muscle (Claude Code):** Runs in your terminal, pointed at your Obsidian vault. It uses its **File System tools** to read your tasks and write reports. The Ralph Wiggum loop (a Stop hook) keeps Claude iterating until multi-step tasks are complete.
 
+---
+<br>
 
-### **2. Architecture: Perception → Reasoning → Action**
+## 2. Architecture: Perception → Reasoning → Action
 
-#### **A. Perception (The "Watchers")**
+### A. Perception (The "Watchers")
 
 Since Claude Code can't "listen" to the internet 24/7, you use lightweight **Python Sentinel Scripts** running in the background:
 
-* **Comms Watcher:** Monitors Gmail and WhatsApp (via local web-automation or APIs) and saves new urgent messages as .md files in a /Needs_Action folder.
-* **Finance Watcher:** Downloads local CSVs or calls banking APIs to log new transactions in /Accounting/Current_Month.md.
+* **Comms Watcher:** Monitors Gmail and WhatsApp (via local web-automation or APIs) and saves new urgent messages as .md files in a `/Needs_Action` folder.
+* **Finance Watcher:** Downloads local CSVs or calls banking APIs to log new transactions in `/Accounting/Current_Month.md`.
 * It will also be able to run on your laptop and immediately “wake up” as soon as you open your machine.
 
-# **Watcher Architecture**
+#### **Watcher Architecture**
 
 The Watcher layer is your AI Employee's sensory system. These lightweight Python scripts run continuously, monitoring various inputs and creating actionable files for Claude to process.
 
-## **Core Watcher Pattern**
+##### **Core Watcher Pattern**
 
 All Watchers follow this structure:
 
@@ -197,7 +207,7 @@ from abc import ABC, abstractmethod
 class BaseWatcher(ABC):
     def __init__(self, vault_path: str, check_interval: int = 60):
         self.vault_path = Path(vault_path)
-        self.Needs_Action = self.vault_path / 'Needs_Action'
+        self.needs_action = self.vault_path / 'Needs_Action'
         self.check_interval = check_interval
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -223,7 +233,7 @@ class BaseWatcher(ABC):
             time.sleep(self.check_interval)
 ```
 
-## **Gmail Watcher Implementation**
+##### **Gmail Watcher Implementation**
 
 ```python
 # gmail_watcher.py
@@ -261,7 +271,6 @@ subject: {headers.get('Subject', 'No Subject')}
 received: {datetime.now().isoformat()}
 priority: high
 status: pending
-
 ---
 
 ## Email Content
@@ -272,13 +281,13 @@ status: pending
 - [ ] Forward to relevant party
 - [ ] Archive after processing
 '''
-        filepath = self.Needs_Action / f'EMAIL_{message["id"]}.md'
+        filepath = self.needs_action / f'EMAIL_{message["id"]}.md'
         filepath.write_text(content)
         self.processed_ids.add(message['id'])
         return filepath
 ```
 
-## **WhatsApp Watcher (Playwright-based)**
+##### **WhatsApp Watcher (Playwright-based)**
 
 Note: This uses WhatsApp Web automation. Be aware of WhatsApp's terms of service.
 
@@ -315,7 +324,7 @@ class WhatsAppWatcher(BaseWatcher):
             return messages
 ```
 
-## **File System Watcher (for local drops)**
+##### **File System Watcher (for local drops)**
 
 ```python
 # filesystem_watcher.py
@@ -326,13 +335,13 @@ import shutil
 
 class DropFolderHandler(FileSystemEventHandler):
     def __init__(self, vault_path: str):
-        self.Needs_Action = Path(vault_path) / 'Needs_Action'
+        self.needs_action = Path(vault_path) / 'Needs_Action'
 
     def on_created(self, event):
         if event.is_directory:
             return
         source = Path(event.src_path)
-        dest = self.Needs_Action / f'FILE_{source.name}'
+        dest = self.needs_action / f'FILE_{source.name}'
         shutil.copy2(source, dest)
         self.create_metadata(source, dest)
 
@@ -348,15 +357,15 @@ New file dropped for processing.
 ''')
 ```
 
-#### **B. Reasoning (Claude Code)**
+### B. Reasoning (Claude Code)
 
 When the **Watcher** detects a change, it triggers a Claude command:
 
-6. **Read:** "Check /Needs_Action and /Accounting."
+6. **Read:** "Check `/Needs_Action` and `/Accounting`."
 7. **Think:** "I see a WhatsApp message from a client asking for an invoice and a bank transaction showing a late payment fee."
 8. **Plan:** Claude creates a Plan.md in Obsidian with checkboxes for the next steps.
 
-#### **C. Action (The "Hands")**
+### C. Action (The "Hands")
 
 Model Context Protocol (MCP) servers are Claude Code's hands for interacting with external systems. Each MCP server exposes specific capabilities that Claude can invoke.
 
@@ -366,7 +375,7 @@ Claude uses custom **MCP (Model Context Protocol)** servers to act:
 * **Browser/Payment MCP:** To log into a payment portal, draft a payment, and stop.
 * **Human-in-the-Loop (HITL):** Claude writes a file: APPROVAL_REQUIRED_Payment_Client_A.md. It **will not** click "Send" until you move that file to the /Approved folder.
 
-## **Recommended MCP Servers**
+#### Recommended MCP Servers
 
 | Server | Capabilities | Use Case |
 | :---- | :---- | :---- |
@@ -376,9 +385,7 @@ Claude uses custom **MCP (Model Context Protocol)** servers to act:
 | calendar-mcp | Create, update events | Scheduling |
 | slack-mcp | Send messages, read channels | Team communication |
 
-##
-
-## **Claude Code Configuration**
+#### Claude Code Configuration
 
 Configure MCP servers in your Claude Code settings:
 
@@ -406,15 +413,15 @@ Configure MCP servers in your Claude Code settings:
 }
 ```
 
-## **Human-in-the-Loop Pattern**
+#### Human-in-the-Loop Pattern
 
 For sensitive actions, Claude writes an approval request file instead of acting directly:
 
-```markdown
-# When Claude detects a sensitive action needed:
-# 1. Create approval request file
+When Claude detects a sensitive action needed:
+1. Create approval request file
 
-# /Vault/Pending_Approval/PAYMENT_Client_A_2026-01-07.md
+```md
+<!-- /Vault/Pending_Approval/PAYMENT_Client_A_2026-01-07.md -->
 ---
 type: approval_request
 action: payment
@@ -432,15 +439,15 @@ status: pending
 - Reference: Invoice #1234
 
 ## To Approve
-Move this file to /Approved folder.
+Move this file to `/Approved` folder.
 
 ## To Reject
-Move this file to /Rejected folder.
+Move this file to `/Rejected` folder.
 ```
 
-The Orchestrator watches the /Approved folder and triggers the actual MCP action when files appear.
+The Orchestrator watches the `/Approved` folder and triggers the actual MCP action when files appear.
 
-#### **D. Persistence (The "Ralph Wiggum" Loop)**
+### D. Persistence (The "Ralph Wiggum" Loop)
 
 Claude Code runs in interactive mode - after processing a prompt, it waits for more input.
 To keep your AI Employee working autonomously until a task is complete, use the
@@ -458,12 +465,12 @@ To keep your AI Employee working autonomously until a task is complete, use the
 
 **Usage**
 
-  ```bash
-  # Start a Ralph loop
-  /ralph-loop "Process all files in /Needs_Action, move to /Done when complete"
-    --completion-promise "TASK_COMPLETE" \
-    --max-iterations 10
-  ```
+```bash
+# Start a Ralph loop
+/ralph-loop "Process all files in /Needs_Action, move to /Done when complete"
+  --completion-promise "TASK_COMPLETE"
+  --max-iterations 10
+```
 
 **Two Completion Strategies:**
 
@@ -475,7 +482,9 @@ To keep your AI Employee working autonomously until a task is complete, use the
 
 Reference: [https://github.com/anthropics/claude-code/tree/main/.claude/plugins/ralph-wiggum](https://github.com/anthropics/claude-code/tree/main/.claude/plugins/ralph-wiggum)
 
-### **3. Continuous vs. Scheduled Operations**
+---
+
+## 3. Continuous vs. Scheduled Operations
 
 | Operation Type | Example Task | Local Trigger |
 | :---- | :---- | :---- |
@@ -483,27 +492,27 @@ Reference: [https://github.com/anthropics/claude-code/tree/main/.claude/plugins/
 | **Continuous** | **Lead Capture:** Watch WhatsApp for keywords like "Pricing." | Python watchdog script monitoring the /Inbox folder. |
 | **Project-Based** | **Q1 Tax Prep:** Categorize 3 months of business expenses. | Manual drag-and-drop of a file into the /Active_Project folder. |
 
-###
+---
 
-### **4. Key Hackathon Feature: The "Business Handover"**
+## 4. Key Hackathon Feature: The "Business Handover"
 
 One of the coolest features you can add is the **Autonomous Business Audit**:
 
 1. **The Trigger:** A scheduled task runs every Sunday night.
-2. **The Process:** Claude Code reads your Business_Goals.md, checks your Tasks/Done folder for the week, and checks your Bank_Transactions.md.
+2. **The Process:** Claude Code reads your `Business_Goals.md`, checks your Tasks/Done folder for the week, and checks your `Bank_Transactions.md`.
 3. **The Deliverable:** It writes a "Monday Morning CEO Briefing" in Obsidian, highlighting:
    * **Revenue:** Total earned this week.
    * **Bottlenecks:** Tasks that took too long.
    * **Proactive Suggestion:** "I noticed we spent $200 on software we don't use; shall I cancel the subscription?"
 
-# **Business Handover Templates**
+### Business Handover Templates
 
 The Business Handover feature transforms your AI Employee from reactive to proactive. Here are the required templates with explicit schemas.
 
-## **Business_Goals.md Template**
+### Business_Goals.md Template
 
-```markdown
-# /Vault/Business_Goals.md
+```md
+<!-- /Vault/Business_Goals.md -->
 ---
 last_updated: 2026-01-07
 review_frequency: weekly
@@ -533,11 +542,11 @@ Flag for review if:
 - Duplicate functionality with another tool
 ```
 
-## **Weekly Audit Logic**
+### Weekly Audit Logic
 
 Claude uses pattern matching to identify subscription usage:
 
-```python
+```py
 # audit_logic.py
 SUBSCRIPTION_PATTERNS = {
     'netflix.com': 'Netflix',
@@ -560,9 +569,9 @@ def analyze_transaction(transaction):
     return None
 ```
 
-## **CEO Briefing Template (Generated Output)**
+### CEO Briefing Template (Generated Output)
 
-```markdown
+```md
 <!-- /Vault/Briefings/2026-01-06_Monday_Briefing.md -->
 ---
 generated: 2026-01-06T07:00:00Z
@@ -603,7 +612,9 @@ Strong week with revenue ahead of target. One bottleneck identified.
 *Generated by AI Employee v0.1*
 ```
 
-### **5. Tech Stack Summary**
+---
+
+## 5. Tech Stack Summary
 
 * **Knowledge Base:** Obsidian (Local Markdown).
 * **Logic Engine:** Claude Code (running claude-4-5-opus or any other LLM using Claude Code Router).
@@ -611,14 +622,15 @@ Strong week with revenue ahead of target. One bottleneck identified.
   * **Playwright** for "Computer Use" (interacting with websites for payments).
 * **Automation Glue:** A master Python Orchestrator.py that handles the timing and folder watching.
 
-### **6. Security & Privacy Architecture**
+---
+
+## 6. Security & Privacy Architecture
 
 Security is non-negotiable when building an autonomous system that handles banking, email, and personal communications. This section outlines required security measures.
 
-##### **6.1 Credential Management**
+### 6.1 Credential Management
 
 Never store credentials in plain text or in your Obsidian vault.
-
 * Use environment variables for API keys: export GMAIL_API_KEY="your-key"
 * For banking credentials, use a dedicated secrets manager (e.g., macOS Keychain, Windows Credential Manager, or 1Password CLI)
 * Create a .env file (add to .gitignore immediately) for local development
@@ -626,7 +638,7 @@ Never store credentials in plain text or in your Obsidian vault.
 
 Example .env structure:
 
-```env
+```bash
 # .env - NEVER commit this file
 GMAIL_CLIENT_ID=your_client_id
 GMAIL_CLIENT_SECRET=your_client_secret
@@ -634,7 +646,7 @@ BANK_API_TOKEN=your_token
 WHATSAPP_SESSION_PATH=/secure/path/session
 ```
 
-#### **6.2 Sandboxing & Isolation**
+### 6.2 Sandboxing & Isolation
 
 Protect against unintended actions during development:
 
@@ -645,7 +657,7 @@ Protect against unintended actions during development:
 
 Example dry-run implementation:
 
-```python
+```py
 # In any action script
 DRY_RUN = os.getenv('DRY_RUN', 'true').lower() == 'true'
 
@@ -656,7 +668,7 @@ def send_email(to, subject, body):
     # Actual send logic here
 ```
 
-##### **6.3 Audit Logging**
+### 6.3 Audit Logging
 
 Every action the AI takes must be logged for review:
 
@@ -674,34 +686,36 @@ Every action the AI takes must be logged for review:
 }
 ```
 
-Store logs in /Vault/Logs/YYYY-MM-DD.json and retain for a minimum 90 days.
+Store logs in `/Vault/Logs/YYYY-MM-DD.json` and retain for a minimum 90 days.
 
-#### **6.4 Permission Boundaries**
+### 6.4 Permission Boundaries
 
-| Action Category | Auto-Approve Threshold | Always Require Approval    |
-| :-------------- | :--------------------- | :------------------------- |
-| Email replies   | To known contacts      | New contacts, bulk sends   |
-| Payments        | < $50 recurring        | All new payees, > $100     |
-| Social media    | Scheduled posts        | Replies, DMs               |
-| File operations | Create, read           | Delete, move outside vault |
+| Action Category | Auto-Approve Threshold | Always Require Approval |
+| :---- | :---- | :---- |
+| Email replies | To known contacts | New contacts, bulk sends |
+| Payments | < $50 recurring | All new payees, > $100 |
+| Social media | Scheduled posts | Replies, DMs |
+| File operations | Create, read | Delete, move outside vault |
 
-### **7. Error States & Recovery**
+---
+
+## 7. Error States & Recovery
 
 Autonomous systems will fail. Plan for it. This section covers common failure modes and recovery strategies.
 
-#### **7.1 Error Categories**
+### 7.1 Error Categories
 
-| Category       | Examples                        | Recovery Strategy             |
-| :------------- | :------------------------------ | :---------------------------- |
-| Transient      | Network timeout, API rate limit | Exponential backoff retry     |
-| Authentication | Expired token, revoked access   | Alert human, pause operations |
-| Logic          | Claude misinterprets message    | Human review queue            |
-| Data           | Corrupted file, missing field   | Quarantine + alert            |
-| System         | Orchestrator crash, disk full   | Watchdog + auto-restart       |
+| Category | Examples | Recovery Strategy |
+| :---- | :---- | :---- |
+| Transient | Network timeout, API rate limit | Exponential backoff retry |
+| Authentication | Expired token, revoked access | Alert human, pause operations |
+| Logic | Claude misinterprets message | Human review queue |
+| Data | Corrupted file, missing field | Quarantine + alert |
+| System | Orchestrator crash, disk full | Watchdog + auto-restart |
 
-#### **7.2 Retry Logic**
+### 7.2 Retry Logic
 
-```python
+```py
 # retry_handler.py
 import time
 from functools import wraps
@@ -723,7 +737,7 @@ def with_retry(max_attempts=3, base_delay=1, max_delay=60):
     return decorator
 ```
 
-#### **7.3 Graceful Degradation**
+### 7.3 Graceful Degradation
 
 When components fail, the system should degrade gracefully:
 
@@ -732,9 +746,9 @@ When components fail, the system should degrade gracefully:
 * Claude Code unavailable: Watchers continue collecting, queue grows for later processing
 * Obsidian vault locked: Write to temporary folder, sync when available
 
-## **7.4 Watchdog Process**
+### 7.4 Watchdog Process
 
-```python
+```py
 # watchdog.py - Monitor and restart critical processes
 import subprocess
 import time
@@ -760,7 +774,7 @@ while True:
     time.sleep(60)
 ```
 
-### **Learning Material To Get Started:**
+## Learning Material To Get Started:
 
 These resources provide a foundational guide on how to integrate Claude Code agentic capabilities with local tools and file systems, which is the exact "foundation layer" required for your personal employee project.
 
@@ -773,14 +787,23 @@ Turning Claude Code into an Employee
 Claude Code and Obsidian for Personal Automation
 [https://www.youtube.com/watch?v=sCIS05Qt79Y](https://www.youtube.com/watch?v=sCIS05Qt79Y)
 
-# Claude Agent Skills - Automate Your Workflow Fast [https://www.youtube.com/watch?v=nbqqnl3JdR0](https://www.youtube.com/watch?v=nbqqnl3JdR0)
+Claude Agent Skills - Automate Your Workflow Fast [https://www.youtube.com/watch?v=nbqqnl3JdR0](https://www.youtube.com/watch?v=nbqqnl3JdR0)
 
 Claude Code just Built me an AI Agent Team (Claude Code + Skills + MCP)
 [https://www.youtube.com/watch?v=0J2_YGuNrDo](https://www.youtube.com/watch?v=0J2_YGuNrDo)
 
+**Why Odoo (Value-for-Money ERP Perspective)?**
+[https://chatgpt.com/share/6967deaf-9404-8001-9ad7-03017255ebaf](https://chatgpt.com/share/6967deaf-9404-8001-9ad7-03017255ebaf)
+
+**Odoo Official Documentation (Community Edition)**
+[https://www.odoo.com/documentation](https://www.odoo.com/documentation)
+
+**Odoo 19 External JSON-2 API (recommended for your Odoo 19+ MCP integration):**
+[https://www.odoo.com/documentation/19.0/developer/reference/external_api.html](https://www.odoo.com/documentation/19.0/developer/reference/external_api.html?utm_source=chatgpt.com)
+
 Curated resources organized by learning stage. Start with Prerequisites, then progress through each level.
 
-## **Prerequisites (Complete Before Hackathon)**
+### Prerequisites (Complete Before Hackathon)
 
 | Topic | Resource | Time |
 | :---- | :---- | :---- |
@@ -791,7 +814,7 @@ Curated resources organized by learning stage. Start with Prerequisites, then pr
 | MCP Introduction | modelcontextprotocol.io/introduction | 1 hour |
 | Agent Skills | platform.claude.com/docs/en/agents-and-tools/agent-skills/overview | 2 hours |
 
-## **Core Learning (During Hackathon)**
+### Core Learning (During Hackathon)
 
 | Topic | Resource | Type |
 | :---- | :---- | :---- |
@@ -801,22 +824,23 @@ Curated resources organized by learning stage. Start with Prerequisites, then pr
 | Gmail API Setup | developers.google.com/gmail/api/quickstart | Docs |
 | Playwright Automation | playwright.dev/python/docs/intro | Docs |
 
-## **Deep Dives (Post-Hackathon)**
+### Deep Dives (Post-Hackathon)
+
 * MCP Server Development: github.com/anthropics/mcp-servers (reference implementations)
 * Production Automation: "Automate the Boring Stuff with Python" (free online book)
 * Security Best Practices: OWASP API Security Top 10
 * Agent Architecture: "Building LLM-Powered Applications" by Anthropic
 
-## **Hackathon Rules & Judging Criteria**
+## Hackathon Rules & Judging Criteria
 
-### **Participation Rules**
+### Participation Rules
 
 1. Individual
 2. All code must be original or properly attributed open-source
 3. Must use Claude Code as the primary reasoning engine
 4. Projects must include documentation and a demo video
 
-### **Judging Criteria**
+## Judging Criteria
 
 | Criterion | Weight | Description |
 | :---- | :---- | :---- |
@@ -827,7 +851,7 @@ Curated resources organized by learning stage. Start with Prerequisites, then pr
 | Documentation | 10% | Clear README, setup instructions, demo |
 
 
-### **Submission Requirements**
+### Submission Requirements
 
 * GitHub repository (public or private with judge access)
 * README.md with setup instructions and architecture overview
@@ -836,38 +860,37 @@ Curated resources organized by learning stage. Start with Prerequisites, then pr
 * Tier declaration: Bronze, Silver, or Gold
 * Submit Form: [https://forms.gle/JR9T1SJq5rmQyGkGA](https://forms.gle/JR9T1SJq5rmQyGkGA)
 
-## **Example: End-to-End Invoice Flow**
+## Example: End-to-End Invoice Flow
 
 This walkthrough demonstrates a complete flow from trigger to action, showing how all components work together.
 
-#### **Scenario**
+### Scenario
 
 A client sends a WhatsApp message asking for an invoice. The AI Employee should: (1) detect the request, (2) generate the invoice, (3) send it via email, and (4) log the transaction.
 
-### **Step 1: Detection (WhatsApp Watcher)**
+### Step 1: Detection (WhatsApp Watcher)
 
 The WhatsApp Watcher detects a message containing the keyword "invoice":
-
 ```
-# Detected message:
-# From: Client A
-# Text: "Hey, can you send me the invoice for January?"
+Detected message:
+From: Client A
+Text: "Hey, can you send me the invoice for January?"
 
-# Watcher creates:
-# /Vault/Needs_Action/WHATSAPP_client_a_2026-01-07.md
+Watcher creates:
+/Vault/Needs_Action/WHATSAPP_client_a_2026-01-07.md
 ```
 
-### **Step 2: Reasoning (Claude Code)**
+### Step 2: Reasoning (Claude Code)
 
 The Orchestrator triggers Claude to process the Needs_Action folder:
 
-```
-# Claude reads the file and creates:
-# /Vault/Plans/PLAN_invoice_client_a.md
+```md
+<!-- Claude reads the file and creates: -->
+<!-- /Vault/Plans/PLAN_invoice_client_a.md -->
 
 ---
 created: 2026-01-07T10:30:00Z
-status: Pending_Approval
+status: pending_approval
 ---
 
 ## Objective
@@ -884,28 +907,29 @@ Generate and send January invoice to Client A
 Email send requires human approval. See /Pending_Approval/
 ```
 
-## **Step 3: Approval (Human-in-the-Loop)**
+### Step 3: Approval (Human-in-the-Loop)
 
 Claude creates an approval request:
 
-```
-# /Vault/Pending_Approval/EMAIL_invoice_client_a.md
+```md
+<!-- /Vault/Pending_Approval/EMAIL_invoice_client_a.md -->
 ---
 action: send_email
 to: client_a@email.com
 subject: January 2026 Invoice - $1,500
 attachment: /Vault/Invoices/2026-01_Client_A.pdf
 ---
+
+Ready to send. Move to `/Approved` to proceed.
+
+You review and move the file to `/Approved`.
 ```
 
-Ready to send. Move to /Approved to proceed.
-You review and move the file to /Approved.
-
-## **Step 4: Action (Email MCP)**
+### Step 4: Action (Email MCP)
 
 The Orchestrator detects the approved file and calls the Email MCP:
 
-```python
+```py
 # MCP call (simplified)
 await email_mcp.send_email({
   to: 'client_a@email.com',
@@ -917,24 +941,26 @@ await email_mcp.send_email({
 # Result logged to /Vault/Logs/2026-01-07.json
 ```
 
-## **Step 5: Completion**
+### Step 5: Completion
 
 Claude updates the Dashboard and moves files to Done:
 
-```
-# /Vault/Dashboard.md updated:
+```md
+<!-- /Vault/Dashboard.md updated: -->
 ## Recent Activity
 - [2026-01-07 10:45] Invoice sent to Client A ($1,500)
 
-# Files moved:
-# /Needs_Action/WHATSAPP_... -> /Done/
-# /Plans/PLAN_invoice_... -> /Done/
-# /Approved/EMAIL_... -> /Done/
+Files moved:
+/Needs_Action/WHATSAPP_... -> /Done/
+/Plans/PLAN_invoice_... -> /Done/
+/Approved/EMAIL_... -> /Done/
 ```
 
-## **Troubleshooting FAQ**
+---
 
-### **Setup Issues**
+## Troubleshooting FAQ
+
+### Setup Issues
 
 **Q: Claude Code says "command not found"**
 
@@ -948,7 +974,7 @@ A: Check that you're running Claude Code from the vault directory, or using the 
 
 A: Your OAuth consent screen may need verification, or you haven't enabled the Gmail API in Google Cloud Console. Check the project settings.
 
-### **Runtime Issues**
+### Runtime Issues
 
 **Q: Watcher scripts stop running overnight**
 
@@ -962,7 +988,7 @@ A: Review your Company_Handbook.md rules. Add more specific examples. Consider l
 
 A: Check that the server process is running (ps aux | grep mcp). Verify the path in mcp.json is absolute. Check Claude Code logs for connection errors.
 
-### **Security Concerns**
+### Security Concerns
 
 **Q: How do I know my credentials are safe?**
 
@@ -972,11 +998,13 @@ A: Never commit .env files. Use environment variables. Regularly rotate credenti
 
 A: That's why HITL is critical for payments. Any payment action should create an approval file first. Never auto-approve payments to new recipients.
 
-## **Ethics & Responsible Automation**
+---
+
+## Ethics & Responsible Automation
 
 With great automation comes great responsibility. Consider these principles as you build.
 
-### **When Should AI NOT Act Autonomously?**
+### When Should AI NOT Act Autonomously?
 
 * Emotional contexts: Condolence messages, conflict resolution, sensitive negotiations
 * Legal matters: Contract signing, legal advice, regulatory filings
@@ -984,23 +1012,23 @@ With great automation comes great responsibility. Consider these principles as y
 * Financial edge cases: Unusual transactions, new recipients, large amounts
 * Irreversible actions: Anything that cannot be easily undone
 
-### **Transparency Principles**
+### Transparency Principles
 
 * Disclose AI involvement: When your AI sends emails, consider adding a signature noting AI assistance
 * Maintain audit trails: All actions should be logged and reviewable
 * Allow opt-out: Give contacts a way to request human-only communication
 * Regular reviews: Schedule weekly reviews of AI decisions to catch drift
 
-### **Privacy Considerations**
+### Privacy Considerations
 
 * Minimize data collection: Only capture what's necessary
 * Local-first: Keep sensitive data on your machine when possible
 * Encryption at rest: Consider encrypting your Obsidian vault
 * Third-party caution: Understand what data leaves your system via APIs
 
-### **The Human Remains Accountable**
+### The Human Remains Accountable
 
-Remember: You are responsible for your AI Employee's actions. The automation runs on your behalf, using your credentials, acting in your name. Regular oversight isn't optional—it's essential.
+**Remember:** You are responsible for your AI Employee's actions. The automation runs on your behalf, using your credentials, acting in your name. Regular oversight isn't optional—it's essential.
 
 Suggested oversight schedule:
 
@@ -1009,7 +1037,9 @@ Suggested oversight schedule:
 3. Monthly: 1-hour comprehensive audit
 4. Quarterly: Full security and access review
 
-## **Architecture Diagram**
+---
+
+## Architecture Diagram
 
 The following ASCII diagram illustrates the complete system architecture:
 
@@ -1090,7 +1120,7 @@ The following ASCII diagram illustrates the complete system architecture:
 **Local-First:** Privacy-centric architecture using Obsidian.
 **HITL Safety:** Sophisticated file-based approval system prevents AI accidents.
 
-### **Note for Developers: Why "Watchers" Need Process Management**
+### Note for Developers: Why "Watchers" Need Process Management**
 
 In the proposed architecture, your "Watchers" (Gmail, WhatsApp listeners) are essentially **daemon processes**. They are designed to run indefinitely to poll for events1.
 
@@ -1102,16 +1132,18 @@ However, standard Python scripts invoked via terminal (e.g., python watcher.py) 
 
 **"Process Management"** solves this by wrapping your scripts in a supervisor that ensures state persistence.
 
-#### **The Problem: Script Fragility**
+#### The Problem: Script Fragility
 
-If you run python gmail_watcher.py and your internet blips for 5 seconds, the script throws an exception and exits. Your AI employee is now "dead" until you manually SSH in and restart it.
+If you run python `gmail_watcher.py` and your internet blips for 5 seconds, the script throws an exception and exits. Your AI employee is now "dead" until you manually SSH in and restart it.
 
-#### **The Solution: A Process Manager (PM)**
+#### The Solution: A Process Manager (PM)
 
 A PM (like **PM2**, **supervisord**, or **Systemd**) acts as a watchdog. It daemonizes your script and monitors its PID.
 
-* **Auto-Restart:** If the process exits with a non-zero code (crash), the PM immediately restarts it.
+* **Auto-Restart:** If the process exits with a non-zero code (crash), the PM immediately restarts it2.
+
 * **Startup Persistence:** It hooks into the OS init system (e.g., systemd on Linux) to launch the script on boot3.
+
 * **Logging:** It captures stdout/stderr to log files, which is critical for debugging silent failures over long periods.
 
 Quick Recommendation:
@@ -1131,7 +1163,7 @@ pm2 startup
 
 Alternatively, the hackathon document suggests writing a custom Python "Watchdog" script that loops and checks PIDs, effectively building a primitive process manager yourself.
 
-**Next Step: Advanced Custom Cloud FTE Architecture**
+## Next Step: Advanced Custom Cloud FTE Architecture
 Once you have built this local AI Employee, you can shift to building cloud based custom FTEs:
 
 [https://docs.google.com/document/d/15GuwZwIOQy_g1XsIJjQsFNHCTQTWoXQhWGVMhiH0swc/edit?usp=sharing](https://docs.google.com/document/d/15GuwZwIOQy_g1XsIJjQsFNHCTQTWoXQhWGVMhiH0swc/edit?usp=sharing)

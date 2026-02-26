@@ -1,4 +1,4 @@
-# Personal AI Employee
+# Personal AI Employee - Digital FTE
 
 This is a hackathon project to build an autonomous AI employee that can manage personal and business affairs using Claude Code as the reasoning engine and Obsidian as the management dashboard.
 
@@ -26,17 +26,17 @@ This is a hackathon project to build an autonomous AI employee that can manage p
 
 ## Hackathon Tiers
 
-### **Bronze Tier: Foundation (Minimum Viable Deliverable)**
+### Bronze Tier: Foundation (Minimum Viable Deliverable)
 
 Estimated time: 8-12 hours
 
 - [X] Obsidian vault with Dashboard.md and Company_Handbook.md
 - [X] One working Watcher script (Gmail OR file system monitoring)
 - [X] Claude Code successfully reading from and writing to the vault
-- [X] Basic folder structure: /Inbox, /Needs_Action, /Done
+- [X] Basic folder structure: `/Inbox`, `/Needs_Action`, `/Done`
 - [X] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-### **Silver Tier: Functional Assistant**
+### Silver Tier: Functional Assistant
 
 Estimated time: 20-30 hours
 All Bronze requirements plus:
@@ -49,13 +49,13 @@ All Bronze requirements plus:
 - [X] Basic scheduling via cron or Task Scheduler
 - [X] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-### **Gold Tier: Autonomous Employee**
+### Gold Tier: Autonomous Employee
 
 Estimated time: 40+ hours
 All Silver requirements plus:
 
 - [X] Full cross-domain integration (Personal + Business)
-- [X] Create accounting system for your business in Xero ( [https://www.xero.com/](https://www.xero.com/) ) and integrate it with its MCP Server ( [https://github.com/XeroAPI/xero-mcp-server](https://github.com/XeroAPI/xero-mcp-server) )
+- [X] Create an accounting system for your business in Odoo Community (self-hosted, local) and integrate it via an [MCP server](https://github.com/AlanOgic/mcp-odoo-adv) using Odoo’s JSON-RPC APIs (Odoo 19+).
 - [ ] Integrate Facebook and Instagram and post messages and generate summary
 - [X] Integrate Twitter (X) and post messages and generate summary
 - [X] Multiple MCP servers for different action types
@@ -66,26 +66,30 @@ All Silver requirements plus:
 - [X] Documentation of your architecture and lessons learned
 - [X] All AI functionality should be implemented as [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
 
-### **Platinum Tier: Always-On Cloud + Local Executive (Production-ish AI Employee)**
+### Platinum Tier: Always-On Cloud + Local Executive (Production-ish AI Employee)
 
 Estimated time: 60+ hours
 All Gold requirements plus:
 
-- [ ] **Run the AI Employee on Cloud 24/7** (always-on watchers + orchestrator + health monitoring). Deploy to Cloud VM (Oracle/AWS/etc.) - [Oracle Cloud Free VMs](https://www.oracle.com/cloud/free/) can be used for this
+- [ ] **Run the AI Employee on Cloud 24/7** (always-on watchers + orchestrator + health monitoring). Deploy to Cloud VM (Oracle/AWS/etc.) - [Oracle Cloud Free VMs](https://www.oracle.com/cloud/free/) can be used for this (subject to limits/availability).
+
 - [ ] **Work-Zone Specialization (domain ownership)**:
   - **Cloud owns:** Email triage + draft replies + social post drafts/scheduling (draft-only; requires Local approval before send/post)
   - **Local owns:** approvals, WhatsApp session, payments/banking, and final "send/post" actions
+
 - [ ] **Delegation via Synced Vault (Phase 1)**
-  - Agents communicate by writing files into: /Needs_Action/\<domain\>/, /Plans/\<domain\>/, /Pending_Approval/\<domain\>/
+  - Agents communicate by writing files into: `/Needs_Action/<domain>/`, `/Plans/<domain>/`, `/Pending_Approval/<domain>/`
   - Prevent double-work using:
-    - /In_Progress/\<agent\>/ claim-by-move rule
+    - `/In_Progress/<agent>/` claim-by-move rule
     - single-writer rule for Dashboard.md (Local)
-    - Cloud writes updates to /Updates/ (or /Signals/), and Local merges them into Dashboard.md
+    - Cloud writes updates to `/Updates/` (or `/Signals/`), and Local merges them into Dashboard.md
   - For Vault sync (Phase 1) use Git (recommended) or Syncthing
-  - **Claim-by-move rule:** first agent to move an item from /Needs_Action to /In_Progress/\<agent\>/ owns it; other agents must ignore it
+  - **Claim-by-move rule:** first agent to move an item from `/Needs_Action` to `/In_Progress/<agent>/` owns it; other agents must ignore it.
+
 - [ ] **Security rule:** Vault sync includes only markdown/state. Secrets never sync (.env, tokens, WhatsApp sessions, banking creds). Cloud never stores or uses WhatsApp sessions, banking credentials, or payment tokens
+- [ ] **Deploy Odoo Community on a Cloud VM (24/7)** with HTTPS, backups, and health monitoring; integrate Cloud Agent with Odoo via MCP for draft-only accounting actions and Local approval for posting invoices/payments.
 - [ ] **Optional A2A Upgrade (Phase 2):** Replace some file handoffs with direct A2A messages later, while keeping the vault as the audit record
-- [ ] **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud drafts reply + writes approval file → when Local returns, user approves → Local executes send via MCP → logs → moves task to /Done
+- [ ] **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud drafts reply + writes approval file → when Local returns, user approves → Local executes send via MCP → logs → moves task to `/Done`
 
 #### **Platinum Phase 1A: Vault Sync Infrastructure (COMPLETE)**
 
