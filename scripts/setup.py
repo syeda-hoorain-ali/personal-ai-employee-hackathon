@@ -379,9 +379,9 @@ def main():
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "gmail", "--", "npx", "-y", "@gongrzhe/server-gmail-autoauth-mcp"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "context7", "--", "npx", "-y", "@upstash/context7-mcp"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "playwright", "--", "npx", "-y", "@playwright/mcp@latest"],
-                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "xero", "--env", "XERO_CLIENT_ID='${XERO_CLIENT_ID}'", "--env", "XERO_CLIENT_SECRET='${XERO_CLIENT_SECRET}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
+                    # ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "xero", "--env", "XERO_CLIENT_ID='${XERO_CLIENT_ID}'", "--env", "XERO_CLIENT_SECRET='${XERO_CLIENT_SECRET}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "twitter-x", "--env", "AUTH_TYPE='oauth2", "--env", "OAUTH2_CLIENT_ID='${X_CLIENT_ID}'", "--env", "OAUTH2_CLIENT_SECRET='${X_CLIENT_SECRET}'", "--env", "OAUTH2_ACCESS_TOKEN='${X_ACCESS_TOKEN}'", "--env", "OAUTH2_REFRESH_TOKEN='${X_REFRESH_TOKEN}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
-                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "odoo", "--env", "ODOO_URL='${ODOO_URL}'", "--env", "ODOO_USER='${ODOO_USER}'", "--env", "ODOO_API_KEY='${ODOO_API_KEY}'", "--env", "ODOO_DB='${ODOO_DB}'", "--env", "ODOO_YOLO='${ODOO_DB:-read}'", "--", "uvx", "mcp-server-odoo"],
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "odoo", "--env", "ODOO_URL='${ODOO_URL}'", "--env", "ODOO_USER='${ODOO_USER}'", "--env", "ODOO_API_KEY='${ODOO_API_KEY}'", "--env", "ODOO_DB='${ODOO_DB}'", "--env", "ODOO_YOLO='${ODOO_YOLO}'", "--", "uvx", "mcp-server-odoo"],
                 ]
 
                 for cmd in mcp_commands:

@@ -9,6 +9,7 @@ import os
 import sys
 import subprocess
 import re
+import shlex
 from pathlib import Path
 
 
@@ -135,7 +136,8 @@ def set_permanent_env_var_unix(key, value):
             print(f"[INFO] Creating new shell profile: {profile}")
 
         # Check if variable already exists in profile
-        export_line = f'export {key}="{value}"'
+        # Use shlex.quote() to prevent shell injection attacks
+        export_line = f'export {key}={shlex.quote(value)}'
 
         if profile.exists():
             with open(profile, 'r', encoding='utf-8') as f:

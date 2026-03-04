@@ -58,7 +58,7 @@
         "ODOO_API_KEY": "${ODOO_API_KEY}",
         "ODOO_USER": "${ODOO_USER}",
         "ODOO_DB": "${ODOO_DB}",
-        "ODOO_YOLO": "read"
+        "ODOO_YOLO": "${ODOO_YOLO}"
       }
     },
     "xero": {
