@@ -36,12 +36,32 @@ Before you begin, you'll need:
    - Copy Client ID and Client Secret
    - Save these for the next step
 
-```powershell
-[System.Environment]::SetEnvironmentVariable('X_CLIENT_ID', 'YOUR_CLIENT_ID_HERE', 'User')
-[System.Environment]::SetEnvironmentVariable('X_CLIENT_SECRET', 'YOUR_CLIENT_SECRET_HERE', 'User')
-```
+6. **Set Environment Variables**:
+   Add your X credentials to the project's environment configuration:
 
-2. **Generate User Tokens**:
+   a. **Open the .env file** in your project root directory:
+      ```
+      notepad .env        # Windows
+      nano .env           # Linux/Mac
+      ```
+
+   b. **Add your X credentials** to the file:
+      ```
+      X_CLIENT_ID=your_actual_client_id_here
+      X_CLIENT_SECRET=your_actual_client_secret_here
+      ```
+      Replace with the values from step 5.
+
+   c. **Save the .env file**
+
+   d. **Run the sync script** to apply the changes:
+      ```
+      python scripts/sync_env_vars.py
+      ```
+
+   This will set the variables permanently in your system and make them available for the X MCP server.
+
+7. **Generate User Tokens**:
    ```bash
    # Run the OAuth2 setup script
    node scripts/oauth2-setup.js

@@ -77,28 +77,31 @@ You have two options:
 4. Click "Copy" next to each to copy them
 5. **Important**: Copy the Client Secret immediately - you won't be able to see it again!
 
-### 8. Set Environment Variables Permanently
-Set your Xero credentials as permanent environment variables on your system:
+### 8. Set Environment Variables
+Add your Xero credentials to the project's environment configuration:
 
-**On Windows:**
-1. Open PowerShell as Administrator
-2. Run these commands to set permanent environment variables:
-   ```powershell
-   [System.Environment]::SetEnvironmentVariable('XERO_CLIENT_ID', 'YOUR_CLIENT_ID_HERE', 'User')
-   [System.Environment]::SetEnvironmentVariable('XERO_CLIENT_SECRET', 'YOUR_CLIENT_SECRET_HERE', 'User')
+1. **Open the .env file** in your project root directory with your preferred text editor:
    ```
-3. Replace `YOUR_CLIENT_ID_HERE` with your actual Client ID and `YOUR_CLIENT_SECRET_HERE` with your actual Client Secret
-4. Restart your terminal for the changes to take effect
+   notepad .env        # Windows
+   nano .env           # Linux/Mac
+   ```
 
-**On macOS/Linux:**
-1. Open your shell configuration file in a text editor:
-   - For bash: `nano ~/.bashrc` or `nano ~/.bash_profile`
-   - For zsh: `nano ~/.zshrc`
-2. Add these lines at the end of the file:
-   ```bash
-   export XERO_CLIENT_ID="YOUR_CLIENT_ID_HERE"
-   export XERO_CLIENT_SECRET="YOUR_CLIENT_SECRET_HERE"
+2. **Add your Xero credentials** to the file:
    ```
-3. Replace `YOUR_CLIENT_ID_HERE` with your actual Client ID and `YOUR_CLIENT_SECRET_HERE` with your actual Client Secret
-4. Save the file and run: `source ~/.bashrc` (or `source ~/.zshrc` for zsh) to apply changes
-5. The variables will now persist across terminal sessions and system restarts
+   XERO_CLIENT_ID=your_actual_client_id_here
+   XERO_CLIENT_SECRET=your_actual_client_secret_here
+   ```
+   Replace `your_actual_client_id_here` and `your_actual_client_secret_here` with the values from step 7.
+
+3. **Save the .env file**
+
+4. **Run the sync script** to apply the changes:
+   ```
+   python scripts/sync_env_vars.py
+   ```
+
+This will:
+- Set the variables permanently in your system (user-level environment variables)
+- Make them available in the current terminal session
+- Ensure the Xero MCP server can access these credentials
+

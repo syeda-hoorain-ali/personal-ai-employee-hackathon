@@ -1,137 +1,214 @@
-# Weekly CEO Briefing Skill
+---
+name: weekly-ceo-briefing
+description: Generate comprehensive weekly CEO briefing with financial data from Odoo, business metrics, and actionable insights. Automatically triggered weekly to provide business overview.
+---
+
+# Weekly CEO Briefing Generator
+
+Generates a comprehensive Monday Morning CEO Briefing by fetching financial data from Odoo and analyzing business performance.
+
+---
 
 ## Purpose
 
-Generate a comprehensive weekly business briefing for the CEO/business owner, including:
-- Revenue progress and financial metrics
-- Completed tasks and accomplishments
-- Subscription cost optimization recommendations
-- Task bottleneck identification
-- Upcoming project deadlines
+Provide business owners with a weekly executive summary that includes:
+- Financial performance (revenue, expenses, profit)
+- Outstanding invoices and cash flow
+- Top customers and revenue sources
+- Recurring expenses and subscriptions
+- Actionable insights and alerts
 
-## Input
+---
 
-This skill expects a context file at `/tmp/weekly_audit_context.json` containing:
+## When to Use
 
-```json
-{
-  "business_goals": {
-    "revenue_target": 10000.00,
-    "current_revenue": 3500.00,
-    "key_metrics": [...],
-    "active_projects": [...],
-    "subscription_rules": {...}
-  },
-  "transaction_summary": {
-    "total_revenue": 3500.00,
-    "total_expenses": 1250.50,
-    "net_income": 2249.50,
-    "transaction_count": 47,
-    "subscription_count": 8,
-    "top_expense_categories": [...],
-    "period_start": "2026-02-10",
-    "period_end": "2026-02-16"
-  },
-  "completed_tasks": [...],
-  "subscriptions": [...],
-  "bottlenecks": [...],
-  "week_start": "2026-02-10",
-  "week_end": "2026-02-16"
-}
+**Trigger phrases:**
+- "Generate weekly CEO briefing"
+- "Create Monday morning briefing"
+- "Show me this week's business summary"
+- Automatically triggered by scheduled task every Monday at 8 AM
+
+---
+
+## Architecture
+
+**This skill provides KNOWLEDGE, not execution:**
+- Skill = Instructions on HOW to generate briefing
+- MCP Tools = Actions to FETCH data from Odoo
+- Claude Code = Orchestrator that uses both
+
+**Data Flow:**
+```
+Trigger Script → Claude Code → This Skill (knowledge) + Odoo MCP (actions) → Briefing File
 ```
 
-## Output
+---
 
-Generate a markdown briefing file at `/Briefings/YYYY-MM-DD_DayOfWeek_Briefing.md` with the following structure:
+## What It Does
+
+### 1. Fetch Financial Data from Odoo
+
+**Use Odoo MCP tools to fetch:**
+
+**Revenue (Posted Invoices):**
+```javascript
+mcp__odoo__search_records({
+  model: "account.move",
+  domain: [
+    ["move_type", "=", "out_invoice"],
+    ["state", "=", "posted"],
+    ["invoice_date", ">=", "WEEK_START_DATE"],
+    ["invoice_date", "<=", "WEEK_END_DATE"]
+  ],
+  fields: ["partner_id", "amount_total", "invoice_date", "name"]
+})
+```
+
+**Expenses (Vendor Bills):**
+```javascript
+mcp__odoo__search_records({
+  model: "account.move",
+  domain: [
+    ["move_type", "=", "in_invoice"],
+    ["state", "=", "posted"],
+    ["invoice_date", ">=", "WEEK_START_DATE"]
+  ],
+  fields: ["partner_id", "amount_total", "invoice_date", "name"]
+})
+```
+
+**Outstanding Invoices:**
+```javascript
+mcp__odoo__search_records({
+  model: "account.move",
+  domain: [
+    ["move_type", "=", "out_invoice"],
+    ["state", "=", "posted"],
+    ["payment_state", "!=", "paid"]
+  ],
+  fields: ["partner_id", "amount_residual", "invoice_date_due", "name"]
+})
+```
+
+**Recent Payments:**
+```javascript
+mcp__odoo__search_records({
+  model: "account.payment",
+  domain: [
+    ["payment_type", "=", "inbound"],
+    ["date", ">=", "WEEK_START_DATE"]
+  ],
+  fields: ["partner_id", "amount", "date", "state"]
+})
+```
+
+### 2. Calculate Metrics
+
+**From fetched data, calculate:**
+- Total revenue (sum of posted invoices)
+- Total expenses (sum of vendor bills)
+- Net profit (revenue - expenses)
+- Outstanding amount (sum of unpaid invoices)
+- Overdue amount (invoices past due date)
+
+### 3. Analyze Patterns
+
+**Subscription Detection:**
+- Group expenses by vendor
+- Identify recurring patterns (same vendor, similar amount, monthly)
+- Flag subscriptions for review
+
+**Customer Analysis:**
+- Rank customers by revenue
+- Identify top 3-5 customers
+
+### 4. Generate Briefing File
+
+**Create markdown file at:**
+```
+<vault>/Briefings/YYYY-MM-DD_Monday_Briefing.md
+```
+
+---
+
+## Briefing Template
 
 ```markdown
-# Weekly Business Briefing
-**Week of**: [Week Start] - [Week End]
+# Weekly CEO Briefing
+
+**Week of**: [Start Date] - [End Date]
 **Generated**: [Timestamp]
 
+---
+
 ## Executive Summary
-[2-3 sentence overview of the week's performance]
 
-## Revenue & Financial Performance
-- **Weekly Revenue**: $X,XXX.XX
-- **Monthly Target**: $X,XXX.XX
-- **Progress**: XX% of monthly target
-- **Trend**: [On track / Behind / Ahead]
-- **Net Income**: $X,XXX.XX (Revenue: $X,XXX.XX - Expenses: $X,XXX.XX)
+[2-3 sentence summary of the week]
 
-### Top Expense Categories
-1. Category Name: $XXX.XX
-2. Category Name: $XXX.XX
-3. Category Name: $XXX.XX
+---
 
-## Completed Tasks (XX tasks)
-- [Task Name] - Completed on [Date]
-- [Task Name] - Completed on [Date]
+## 💰 Financial Performance
 
-## Proactive Suggestions
-### Cost Optimization
-- [Subscription Name]: [Flag reason]. Consider [action] to save $XX.XX/month.
-- [Subscription Name]: [Flag reason]. Consider [action].
+### Revenue & Expenses
 
-### Process Improvements
-- [Insight based on bottlenecks or patterns]
+| Metric | This Week |
+|--------|-----------|
+| Revenue | $X,XXX.XX |
+| Expenses | $X,XXX.XX |
+| Net Profit | $X,XXX.XX |
 
-## Task Bottlenecks
-| Task | Expected | Actual | Delay |
-|------|----------|--------|-------|
-| [Task Name] | Xh | Xh | XX% |
+---
 
-## Upcoming Deadlines
-- **[Project Name]**: [Date] ([X days remaining])
-- **[Project Name]**: [Date] ([X days remaining])
+## 📋 Outstanding Invoices
 
-## Key Metrics Status
-- [Metric Name]: [Current Status] (Target: [Target], Alert: [Threshold])
-- [Metric Name]: [Current Status] (Target: [Target], Alert: [Threshold])
+**Total Outstanding**: $X,XXX.XX (N invoices)
+
+| Customer | Invoice | Amount | Due Date | Status |
+|----------|---------|--------|----------|--------|
+| [Name] | INV/2026/XXXX | $X,XXX.XX | [Date] | ⚠️ Overdue |
+| [Name] | INV/2026/XXXX | $X,XXX.XX | [Date] | ✅ Current |
+
+---
+
+## 👥 Top Customers (This Week)
+
+1. **[Customer Name]** - $X,XXX.XX
+2. **[Customer Name]** - $X,XXX.XX
+3. **[Customer Name]** - $X,XXX.XX
+
+---
+
+## 💳 Recurring Expenses
+
+| Subscription | Amount | Frequency |
+|--------------|--------|-----------|
+| [Service] | $XX.XX | Monthly |
+
+**Total Monthly Subscriptions**: $XXX.XX
+
+---
+
+## 🎯 Action Items
+
+- ⚠️ **Follow up**: [Customer] invoice overdue by X days
+- 📋 **Review**: X invoices pending approval
+- 💡 **Insight**: [Key business insight]
+
+---
+
+*This briefing was automatically generated by your AI Employee.*
+*Data sources: Odoo Accounting System*
 ```
 
-## Instructions
+---
 
-1. Read the context file from `/tmp/weekly_audit_context.json`
-2. Parse the JSON data and extract all relevant information
-3. Calculate derived metrics:
-   - Revenue progress percentage: (current_revenue / revenue_target) * 100
-   - Trend analysis: Compare to previous weeks if data available
-   - Days remaining for project deadlines
-4. Generate executive summary highlighting:
-   - Most significant achievement or concern
-   - Revenue performance
-   - Key action items
-5. Format all currency values with 2 decimal places
-6. Sort completed tasks by completion date (most recent first)
-7. Sort bottlenecks by delay percentage (highest first)
-8. Sort upcoming deadlines by date (soonest first)
-9. For subscriptions with flags, provide specific actionable recommendations
-10. Write the complete briefing to the output file
-11. Ensure all sections are present, even if empty (show "No items" messages)
+## Related Skills
 
-## Error Handling
+- **odoo-report-generator**: Fetches financial data
+- **odoo-invoice-creator**: Creates invoices
+- **odoo-payment-recorder**: Records payments
+- **odoo-expense-tracker**: Tracks expenses
 
-- If context file is missing: Log error and exit
-- If business goals are missing: Use default values and add note to briefing
-- If no completed tasks: Show "No tasks completed this week"
-- If no subscriptions flagged: Show "All subscriptions appear active and optimized"
-- If no bottlenecks: Show "No significant task delays detected"
-- If no upcoming deadlines: Show "No project deadlines in the next 30 days"
+---
 
-## Example Usage
-
-```bash
-# Invoked by the audit orchestrator
-claude --skill weekly-ceo-briefing
-```
-
-The skill will automatically read the context file, generate the briefing, and save it to the appropriate location.
-
-## Notes
-
-- This skill is designed to be invoked programmatically by the audit orchestrator
-- The context file is prepared by the orchestrator before invoking this skill
-- The output file path follows the naming convention: YYYY-MM-DD_DayOfWeek_Briefing.md
-- All dates should be formatted as YYYY-MM-DD for consistency
-- Currency values should include the $ symbol and 2 decimal places
+**Version**: 1.0 | **Created**: 2026-03-01
