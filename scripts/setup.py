@@ -10,6 +10,10 @@ import sys
 import subprocess
 from pathlib import Path
 
+# Import env_sync module for environment variable synchronization
+sys.path.insert(0, str(Path(__file__).parent))
+import env_sync
+
 def is_admin():
     """Check if the script is running with administrator privileges."""
     try:
@@ -44,13 +48,13 @@ def run_command(cmd, desc):
 
 def setup_weekly_audit_scheduler():
     """
-    Set up a scheduled task to run the weekly audit every Sunday at 8:00 PM.
+    Set up a scheduled task to run the weekly CEO briefing every Monday at 8:00 AM.
     Only runs if the script is executed with administrator privileges.
     """
     # Check if running as administrator
     if not is_admin():
-        print("[WARNING] Weekly audit scheduler setup requires administrator privileges.")
-        print("         Skipping weekly audit scheduler setup.")
+        print("[WARNING] Weekly briefing scheduler setup requires administrator privileges.")
+        print("         Skipping weekly briefing scheduler setup.")
         print("         Please run this script as an administrator to enable automatic weekly briefings.")
         return False
 
@@ -58,14 +62,20 @@ def setup_weekly_audit_scheduler():
 
     # Check OS type
     if os.name != 'nt':  # Not Windows
-        print(f"[INFO] For Unix/Linux systems, use cron to schedule weekly audits.")
+        print(f"[INFO] For Unix/Linux systems, use cron to schedule weekly briefings.")
         print("         Add this to your crontab (crontab -e):")
-        print("         0 20 * * 0 cd /path/to/project && python -m app.src.app.weekly_audit.audit_orchestrator")
+        print(f"         0 8 * * 1 cd /path/to/project && python app/scripts/weekly_briefing_trigger.py")
         return False
 
     task_name = "WeeklyCEOBriefing"
     project_root = Path(__file__).parent.parent.resolve()
     python_exe = sys.executable
+    trigger_script = project_root / "app" / "scripts" / "weekly_briefing_trigger.py"
+
+    # Verify trigger script exists
+    if not trigger_script.exists():
+        print(f"[ERROR] Trigger script not found at: {trigger_script}")
+        return False
 
     # First, try to delete the existing task if it exists
     delete_cmd = ['schtasks', '/delete', '/tn', task_name, '/f']
@@ -75,39 +85,28 @@ def setup_weekly_audit_scheduler():
     except Exception as e:
         print(f"[INFO] No existing task to delete or error deleting: {e}")
 
-    # PowerShell script to create the task
-    ps_script = f'''
-    $action = New-ScheduledTaskAction -Execute "{python_exe}" -Argument '-m src.app.weekly_audit.audit_orchestrator' -WorkingDirectory "{project_root}/app"
-
-    # Trigger: Run every Sunday at 8:00 PM
-    $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At "8:00PM"
-
-    # Settings to ensure task runs reliably
-    $settings = New-ScheduledTaskSettingsSet `
-        -AllowStartIfOnBatteries `
-        -DontStopIfGoingOnBatteries `
-        -StartWhenAvailable `
-        -RunOnlyIfNetworkAvailable:$true `
-        -ExecutionTimeLimit (New-TimeSpan -Hours 1) `
-        -MultipleInstances Queue
-
-    # Principal to run whether logged in or not
-    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERNAME" -LogonType ServiceAccount -RunLevel Highest
-
-    # Register the task
-    Register-ScheduledTask -TaskName "{task_name}" -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
-    '''
+    # Create the scheduled task using schtasks (simpler than PowerShell)
+    create_cmd = [
+        'schtasks', '/create',
+        '/tn', task_name,
+        '/tr', f'"{python_exe}" "{trigger_script}"',
+        '/sc', 'weekly',
+        '/d', 'MON',
+        '/st', '08:00',
+        '/rl', 'HIGHEST',
+        '/f'
+    ]
 
     try:
-        # Create new task using PowerShell
         result = subprocess.run(
-            ['powershell', '-Command', ps_script],
+            create_cmd,
             capture_output=True,
             text=True,
             check=True
         )
         print(f"[SUCCESS] Successfully created scheduled task '{task_name}'")
-        print(f"[SUCCESS] The task will run weekly audit every Sunday at 8:00 PM")
+        print(f"[SUCCESS] The task will run weekly CEO briefing every Monday at 8:00 AM")
+        print(f"[INFO] Architecture: Trigger → Claude Code → Skills + Odoo MCP")
         return True
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Error creating scheduled task: {e}")
@@ -204,6 +203,23 @@ def main():
     if not Path("app").exists():
         print("ERROR: Please run this script from the project root directory")
         return 1
+
+    # Sync environment variables from .env file
+    print("0. Syncing environment variables from .env file...")
+    env_file = Path(".env")
+
+    if not env_file.exists():
+        print("[WARNING] .env file not found!")
+        print("          Please create a .env file by copying .env.example:")
+        print("          cp .env.example .env")
+        print()
+        print("          Then fill in your configuration values.")
+        print("          Continuing setup without environment variables...")
+        print()
+    else:
+        # Sync environment variables
+        env_sync.sync_env_variables(env_path=str(env_file), verbose=True)
+        print()
 
     print("1. Setting up virtual environment...")
     # Check if virtual environment already exists
@@ -363,8 +379,9 @@ def main():
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "gmail", "--", "npx", "-y", "@gongrzhe/server-gmail-autoauth-mcp"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "context7", "--", "npx", "-y", "@upstash/context7-mcp"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "playwright", "--", "npx", "-y", "@playwright/mcp@latest"],
-                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "xero", "--env", "XERO_CLIENT_ID='${XERO_CLIENT_ID}'", "--env", "XERO_CLIENT_SECRET='${XERO_CLIENT_SECRET}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
+                    # ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "xero", "--env", "XERO_CLIENT_ID='${XERO_CLIENT_ID}'", "--env", "XERO_CLIENT_SECRET='${XERO_CLIENT_SECRET}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
                     ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "twitter-x", "--env", "AUTH_TYPE='oauth2", "--env", "OAUTH2_CLIENT_ID='${X_CLIENT_ID}'", "--env", "OAUTH2_CLIENT_SECRET='${X_CLIENT_SECRET}'", "--env", "OAUTH2_ACCESS_TOKEN='${X_ACCESS_TOKEN}'", "--env", "OAUTH2_REFRESH_TOKEN='${X_REFRESH_TOKEN}'", "--", "npx", "-y", "@xeroapi/xero-mcp-server@latest"],
+                    ["claude", "mcp", "add", "--scope", "project", "--transport", "stdio", "odoo", "--env", "ODOO_URL='${ODOO_URL}'", "--env", "ODOO_USER='${ODOO_USER}'", "--env", "ODOO_API_KEY='${ODOO_API_KEY}'", "--env", "ODOO_DB='${ODOO_DB}'", "--env", "ODOO_YOLO='${ODOO_YOLO}'", "--", "uvx", "mcp-server-odoo"],
                 ]
 
                 for cmd in mcp_commands:

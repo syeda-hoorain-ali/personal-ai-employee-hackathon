@@ -54,21 +54,30 @@ Claude Code CLI is required for MCP server registration and plugin installation:
 
 These are optional but enable additional features:
 
-## Setting Up Google Credentials (Optional)
+#### Setting Up Google Credentials (Optional)
 
 If you want the AI Employee to monitor your Gmail account:
-[Gmail setup guide](./guides/gmail-setup-guide.md)
+[Gmail setup guide](/guides/gmail-setup-guide.md)
 
-## Setting Up LinkedIn Credentials (Optional)
+#### Setting Up LinkedIn Credentials (Optional)
 
 If you want the AI Employee to automatically post on LinkedIn:
-[Linkedin setup guide](./guides/linkedin-setup-guide.md)
+[Linkedin setup guide](/guides/linkedin-setup-guide.md)
 
-## Setting Up Xero Credentials (Optional)
+#### Setting Up Odoo (Optional)
 
-If you want the AI Employee to manage your accounting and financial data through Xero:
-[Xero setup guide](./guides/xero-setup-guide.md)
+If you want the AI Employee to manage accounting, invoicing, and business operations through Odoo Community Edition:
+[Odoo setup guide](/guides/ODOO_SETUP_GUIDE.md)
 
+**Features enabled with Odoo:**
+- Automated invoice creation and management
+- Expense tracking and categorization
+- Customer relationship management (CRM)
+- Weekly CEO briefings with real-time financial data
+- Payment recording and bank reconciliation
+- Financial reports and business analytics
+
+---
 
 ## Running the System
 
@@ -78,13 +87,29 @@ If you want the AI Employee to manage your accounting and financial data through
 ### 2. Open Command Prompt/Terminal
 - Navigate to the project's root directory where `scripts` folder is located
 
-### 3. Run the Setup and Start Script
+### 3. Configure Environment Variables
+Before running the setup script, configure your environment variables:
+
+1. Copy the example configuration file:
+   ```
+   cp .env.example .env
+   ```
+   (On Windows Command Prompt, use: `copy .env.example .env`)
+
+2. Edit the `.env` file with your preferred text editor and fill in your values:
+   - **Required for basic operation**: `VAULT_PATH`, `AGENT_NAME`
+   - **Optional for other features**: See `.env.example` for all available options
+
+3. Save the `.env` file
+
+### 4. Run the Setup and Start Script
 Execute the following command:
 ```
 python scripts/setup.py
 ```
 
 This will:
+- **Sync environment variables** from your .env file to system (permanent) and session (temporary)
 - Set up the virtual environment
 - Install all dependencies
 - Create the vault structure with necessary directories
@@ -119,6 +144,39 @@ To give the AI Employee tasks:
 
 ### 7. Stopping the System
 Press `Ctrl+C` in the terminal/command prompt to stop the system gracefully.
+
+---
+
+## Updating Environment Variables
+
+After the initial setup, you may need to update your environment variables (e.g., adding new API keys, updating configuration).
+
+### How to Update
+
+1. **Edit the .env file** with your preferred text editor:
+   ```
+   notepad .env        # Windows
+   nano .env           # Linux/Mac
+   ```
+
+2. **Run the sync script** to apply changes:
+   ```
+   python scripts/sync_env_vars.py
+   ```
+
+This will:
+- Read all variables from your `.env` file
+- Set them permanently in your system (user-level environment variables)
+- Make them available in the current terminal session
+- Ensure MCP servers and other components use the updated values
+
+### Important Notes
+- **Windows**: New terminals will automatically have the updated variables
+- **Linux/Mac**: Run `source ~/.bashrc` or restart your terminal to load variables in existing sessions
+- **MCP Servers**: Restart Claude Code or the AI Employee system for MCP servers to pick up new values
+- **Security**: The sync script masks sensitive values (passwords, keys, tokens) in output for security
+
+---
 
 ## Company Handbook Customization
 
@@ -257,7 +315,7 @@ Error recovery components are automatically initialized with sensible defaults. 
 ### Optional Prerequisites:
 - [ ] Gmail credentials set up in ~/.gmail-mcp/ directory
 - [ ] LinkedIn credentials set up in AI_Employee_Vault/config.json
-- [ ] Xero Custom Connection created and credentials added to environment
+- [ ] Odoo Custom Connection created and credentials added to environment
 
 ### Setup and Verification:
 - [ ] Run `python scripts/setup.py` as administrator (Windows) or with sudo (Linux/Mac)

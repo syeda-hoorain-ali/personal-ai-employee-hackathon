@@ -33,17 +33,6 @@
       ],
       "env": {}
     },
-    "xero": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@xeroapi/xero-mcp-server@latest"
-      ],
-      "env": {
-        "XERO_CLIENT_ID": "${XERO_CLIENT_ID}",
-        "XERO_CLIENT_SECRET": "${XERO_CLIENT_SECRET}"
-      }
-    },
     "twitter-x": {
       "command": "npx",
       "args": [
@@ -56,6 +45,32 @@
         "OAUTH2_CLIENT_SECRET": "${X_CLIENT_SECRET}",
         "OAUTH2_ACCESS_TOKEN": "${X_ACCESS_TOKEN}",
         "OAUTH2_REFRESH_TOKEN": "${X_REFRESH_TOKEN}"
+      }
+    },
+    "odoo": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-server-odoo"
+      ],
+      "env": {
+        "ODOO_URL": "${ODOO_URL}",
+        "ODOO_API_KEY": "${ODOO_API_KEY}",
+        "ODOO_USER": "${ODOO_USER}",
+        "ODOO_DB": "${ODOO_DB}",
+        "ODOO_YOLO": "${ODOO_YOLO}"
+      }
+    },
+    "xero": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@xeroapi/xero-mcp-server@latest"
+      ],
+      "env": {
+        "XERO_CLIENT_ID": "'${XERO_CLIENT_ID}'",
+        "XERO_CLIENT_SECRET": "'${XERO_CLIENT_SECRET}'"
       }
     }
   }
